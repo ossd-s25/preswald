@@ -15,12 +15,15 @@ from preswald import (
     slider,
     table,
     text,
+    topbar,
     workflow_dag,
 )
 
 
 # Create a workflow instance
 workflow = Workflow()
+
+topbar()
 
 
 # --- WELCOME MESSAGE ---
