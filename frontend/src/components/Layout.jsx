@@ -76,8 +76,26 @@ export default function Layout({ branding, children }) {
     <div className="min-h-screen bg-background">
       <div id="sidebar-portal" />
       {/* Main Content */}
+<<<<<<< HEAD
       <div className="flex flex-col min-h-screen main-content-layout">
         <TopBar branding={branding || window.PRESWALD_BRANDING} />
+=======
+      <div
+        className={cn(
+          'flex flex-col min-h-screen',
+          'lg:pl-80 transition-all duration-300',
+          isCollapsed && 'lg:pl-20'
+        )}
+      >
+        {/*
+        <TopBar
+          setSidebarOpen={setSidebarOpen}
+          onToggleSidebar={handleToggleSidebar}
+          isCollapsed={isCollapsed}
+          branding={branding || window.PRESWALD_BRANDING}
+        />
+        */}
+>>>>>>> 526441a (Removed topbar inclusion from layout.jsx)
 
         <main className="flex-1 py-10">
           <div className="px-4 sm:px-6 lg:px-8">{children}</div>
