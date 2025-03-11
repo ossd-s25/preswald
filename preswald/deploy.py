@@ -1,5 +1,6 @@
 import io
 import json
+import re
 import logging
 import os
 import shutil
@@ -20,7 +21,7 @@ logger = logging.getLogger(__name__)
 # Default Structured Cloud service URL
 # STRUCTURED_CLOUD_SERVICE_URL = os.getenv('STRUCTURED_CLOUD_SERVICE_URL', 'http://127.0.0.1:8080')
 # @TODO: to inject this from a preswald cli cmdn
-STRUCTURED_CLOUD_SERVICE_URL = "https://corewald-880196552654.us-east1.run.app"
+STRUCTURED_CLOUD_SERVICE_URL = "https://corewald-v2-ndjz2ws6la-ue.a.run.app"
 
 
 def get_deploy_dir(script_path: str) -> Path:
@@ -34,9 +35,13 @@ def get_deploy_dir(script_path: str) -> Path:
     return deploy_dir
 
 
-def get_container_name(script_path: str) -> str:
-    """Generate a consistent container name for a given script"""
-    return f"preswald-app-{Path(script_path).stem}"
+def get_container_name(script_path: str) -> str: 
+    """Generate a consistent container name for a given script""" 
+    container_name = f"preswald-app-{Path(script_path).stem}" 
+    container_name = container_name.lower()
+    container_name = re.sub(r"[^a-z0-9-]", "", container_name)
+    container_name = container_name.strip('-')
+    return container_name
 
 
 def stop_existing_container(container_name: str) -> None:
@@ -556,16 +561,15 @@ def deploy(  # noqa: C901
         raise ValueError(f"Unsupported deployment target: {target}")
 
 
-def stop(script_path: Optional[str] = None) -> None:
+def stop(current_dir: Optional[str] = None) -> None:
     """
     Stop a running Preswald deployment.
 
     If script_path is provided, stops that specific deployment.
     Otherwise, looks for a deployment in the current directory.
     """
-    if script_path:
-        script_path = os.path.abspath(script_path)
-        deploy_dir = get_deploy_dir(script_path)
+    if current_dir:
+        deploy_dir = Path(current_dir) / ".preswald_deploy"
     else:
         # Look for deployment in current directory
         deploy_dir = Path.cwd() / ".preswald_deploy"
@@ -585,7 +589,7 @@ def stop(script_path: Optional[str] = None) -> None:
         raise Exception(f"Failed to stop deployment: {e}") from e
 
 
-def stop_structured_deployment(script_path: str) -> dict:
+def stop_structured_deployment(script_dir: str) -> dict:
     """
     Stop a Preswald app deployed to Structured Cloud service.
 
@@ -595,9 +599,8 @@ def stop_structured_deployment(script_path: str) -> dict:
     Returns:
         dict: Status of the stop operation
     """
-    script_dir = Path(script_path).parent
-    config_path = script_dir / "preswald.toml"
-    env_file = script_dir / ".env.structured"
+    config_path = Path(script_dir) / "preswald.toml"
+    env_file = Path(script_dir) / ".env.structured"
 
     # Get project slug from preswald.toml
     try:

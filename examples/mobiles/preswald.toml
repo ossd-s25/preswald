@@ -1,19 +1,19 @@
 [project]
-title = "Preswald Project"
+title = "Mobile Data Analysis"
 version = "0.1.0"
 port = 8501
-slug = "iris-916474"  # Required: Unique identifier for your project
-entrypoint = "hello.py"
+slug = "mobiles-807626"  # Required: Unique identifier for your project
+entrypoint = "hello.py"    # Required: Main script to run when executing preswald run
 
 [branding]
-name = "Preswald Project"
+name = "Mobile Data Analysis"
 logo = "images/logo.png"
 favicon = "images/favicon.ico"
 primaryColor = "#F89613"
 
-[data.iris_csv]
+[data.sample_csv]
 type = "csv"
-path = "data/iris.csv"
+path = "data/mobiles_data_2025.csv"
 
 [logging]
 level = "INFO"  # Options: DEBUG, INFO, WARNING, ERROR, CRITICAL
