@@ -9,39 +9,11 @@ import { Separator } from '@/components/ui/separator';
 
 import { cn } from '@/lib/utils';
 
-export default function Topbar({ setSidebarOpen, branding, onToggleSidebar, isCollapsed }) {
+const Topbar = ({
+  branding = window.PRESWALD_BRANDING, // default to PRESWALD_BRANDING if nothing is passed
+}) => {
   return (
     <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b bg-background px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
-      {/* REMOVE mobile version button}
-      {/* Mobile menu button}
-      <Button
-        variant="ghost"
-        size="icon"
-        className="lg:hidden"
-        onClick={() => setSidebarOpen(true)}
-        aria-label="Open sidebar"
-      >
-        <Menu className="h-6 w-6" />
-      </Button>
-      */}
-
-      {/* REMOVE sidebar collapse button
-      {/* Desktop collapse button }
-      <Button
-        variant="ghost"
-        size="icon"
-        className="hidden lg:flex"
-        onClick={onToggleSidebar}
-        aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-      >
-        {isCollapsed ? (
-          <PanelLeft className="h-6 w-6 transition-transform duration-200" />
-        ) : (
-          <PanelLeftClose className="h-6 w-6 transition-transform duration-200" />
-        )}
-      </Button>
-      */}
-
       {/* Separator */}
       <Separator orientation="vertical" className="h-6 lg:hidden" />
 
@@ -60,4 +32,4 @@ export default function Topbar({ setSidebarOpen, branding, onToggleSidebar, isCo
       </div>
     </div>
   );
-}
+};
