@@ -19,8 +19,8 @@ import {
 import { cn } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
-import { MarkdownText } from "@/components/assistant-ui/markdown-text";
-import { TooltipIconButton } from "@/components/assistant-ui/tooltip-icon-button";
+import { MarkdownText } from "@/components/markdown-text";
+import { TooltipIconButton } from "@/components/tooltip-icon-button";
 
 export const Thread: FC = () => {
   return (
