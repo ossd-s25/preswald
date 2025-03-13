@@ -523,6 +523,28 @@ def workflow_dag(workflow: Workflow, title: str = "Workflow Dependency Graph") -
         return error_component
 
 
+def sidebar(
+    label: str,
+    default: Optional[float] = None,
+    size: float = 1.0,
+) -> float:
+    """Create a new component with a consistent ID based on label"""
+    service = PreswaldService.get_instance()
+
+    # Create a consistent ID based on the label
+    component_id = f"sidebar-{hashlib.md5(label.encode()).hexdigest()[:8]}"
+
+    component = {
+        "type": "sidebar",
+        "id": component_id,
+        "label": label,
+        "size": size,
+    }
+
+    service.append_component(component)
+    return component
+
+
 # Helpers
 
 
