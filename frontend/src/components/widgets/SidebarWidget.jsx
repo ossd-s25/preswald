@@ -150,8 +150,7 @@ const SidebarWidget = ({ navigation, branding, onToggleSidebar }) => {
           variant="ghost"
           size="icon"
           className="hidden lg:flex"
-          onToggleSidebar={handleToggleSidebar}
-          onClick={onToggleSidebar}
+          onClick={handleToggleSidebar}
           aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
           {isCollapsed ? (

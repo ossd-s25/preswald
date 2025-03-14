@@ -100,7 +100,7 @@ export default function Layout({ branding, children }) {
 
       {/* Main Content */}
       <div
-        className={cn('flex flex-col min-h-screen', {
+        className={cn('flex flex-col min-h-screen', 'transition-all duration-300', {
           /*isCollapsed && 'lg:pl-20'*/
         })}
       >
