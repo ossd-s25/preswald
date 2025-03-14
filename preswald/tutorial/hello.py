@@ -23,7 +23,10 @@ from preswald import (
 # Create a workflow instance
 workflow = Workflow()
 
-topbar()
+
+@workflow.atom()
+def render_topbar():
+    topbar()
 
 
 # --- WELCOME MESSAGE ---

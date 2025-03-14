@@ -57,7 +57,15 @@ class ErrorBoundary extends React.Component {
 
 // Memoized component wrapper
 const MemoizedComponent = memo(
-  ({ component, index, handleUpdate }) => {
+  ({
+    component,
+    index,
+    handleUpdate,
+    sidebarOpen,
+    setSidebarOpen,
+    isCollapsed,
+    setIsCollapsed,
+  }) => {
     const componentId = component.id || `component-${index}`;
     const commonProps = {
       key: componentId,
