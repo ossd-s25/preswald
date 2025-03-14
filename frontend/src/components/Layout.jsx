@@ -87,16 +87,6 @@ export default function Layout({ branding, children }) {
           isCollapsed && 'lg:pl-20'
         )}
       >
-        {/*
-        <TopBar
-          setSidebarOpen={setSidebarOpen}
-          onToggleSidebar={handleToggleSidebar}
-          isCollapsed={isCollapsed}
-          branding={branding || window.PRESWALD_BRANDING}
-        />
-        */}
->>>>>>> 526441a (Removed topbar inclusion from layout.jsx)
-
         <main className="flex-1 py-10">
           <div className="px-4 sm:px-6 lg:px-8">{children}</div>
         </main>
