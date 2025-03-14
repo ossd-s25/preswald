@@ -20,7 +20,7 @@ import { cn } from '@/lib/utils';
 import Sidebar from './Sidebar';
 import TopBar from './TopBar';
 
-const navigation = [{ name: 'Dashboard', href: '/', icon: HomeIcon }];
+//const navigation = [{ name: 'Dashboard', href: '/', icon: HomeIcon }];
 
 export default function Layout({ branding, children }) {
   //const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -100,7 +100,7 @@ export default function Layout({ branding, children }) {
 
       {/* Main Content */}
       <div
-        className={cn('flex flex-col min-h-screen', 'lg:pl-80 transition-all duration-300', {
+        className={cn('flex flex-col min-h-screen', {
           /*isCollapsed && 'lg:pl-20'*/
         })}
       >

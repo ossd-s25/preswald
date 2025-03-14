@@ -1,6 +1,17 @@
 'use client';
 
+import {
+  ChartBarIcon,
+  ClockIcon,
+  DocumentTextIcon,
+  GlobeAltIcon,
+  HomeIcon,
+  MagnifyingGlassIcon,
+  ServerIcon,
+  Squares2X2Icon,
+} from '@heroicons/react/24/solid';
 import { X } from 'lucide-react';
+import { Menu, PanelLeft, PanelLeftClose } from 'lucide-react';
 
 import React, { useState } from 'react';
 import { useEffect } from 'react';
@@ -12,15 +23,12 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 
 import { cn } from '@/lib/utils';
 
-const SidebarWidget = ({ navigation, branding }) => {
+const SidebarWidget = ({ navigation, branding, onToggleSidebar }) => {
   const location = useLocation();
   const primaryColor = branding?.primaryColor || '#000000';
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
-
-  const handleToggleSidebar = () => {
-    setIsCollapsed(!isCollapsed);
-  };
+  navigation = [{ name: 'Dashboard', href: '/', icon: HomeIcon }];
 
   const NavContent = ({ isMobile = false }) => (
     <div className="flex grow flex-col h-full ">
@@ -92,18 +100,12 @@ const SidebarWidget = ({ navigation, branding }) => {
     </div>
   );
 
+  const handleToggleSidebar = () => {
+    setIsCollapsed(!isCollapsed);
+  };
+
   return (
     <>
-      {/* Mobile Sidebar */}
-      {/*
-        <SidebarWidget
-        sidebarOpen={sidebarOpen}
-        setSidebarOpen={setSidebarOpen}
-        navigation={navigation}
-        branding={branding || window.PRESWALD_BRANDING}
-        isCollapsed={isCollapsed}
-        />
-        */}
       {/* Mobile Sidebar */}
       <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
         <SheetContent
@@ -143,6 +145,22 @@ const SidebarWidget = ({ navigation, branding }) => {
           'border-r bg-background transition-all duration-300 ease-in-out transform-gpu'
         )}
       >
+        {/* Desktop collapse button */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="hidden lg:flex"
+          onToggleSidebar={handleToggleSidebar}
+          onClick={onToggleSidebar}
+          aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        >
+          {isCollapsed ? (
+            <PanelLeft className="h-6 w-6 transition-transform duration-200" />
+          ) : (
+            <PanelLeftClose className="h-6 w-6 transition-transform duration-200" />
+          )}
+        </Button>
+
         <div className="flex-1 overflow-hidden px-4 py-2">
           <NavContent />
         </div>
