@@ -14,6 +14,7 @@ import DataVisualizationWidget from './widgets/DataVisualizationWidget';
 import ImageWidget from './widgets/ImageWidget';
 import MarkdownRendererWidget from './widgets/MarkdownRendererWidget';
 import ProgressWidget from './widgets/ProgressWidget';
+import QueryPlaygroundWidget from './widgets/QueryPlaygroundWidget';
 import SelectboxWidget from './widgets/SelectboxWidget';
 import SliderWidget from './widgets/SliderWidget';
 import SpinnerWidget from './widgets/SpinnerWidget';
@@ -231,6 +232,15 @@ const MemoizedComponent = memo(
             data={component.data || {}}
             layout={component.layout || {}}
             config={component.config || {}}
+          />
+        );
+
+      case 'query_playground':
+        return (
+          <QueryPlaygroundWidget
+            {...commonProps}
+            data_sources={component.data_sources}
+            active_source={component.active_source}
           />
         );
 
