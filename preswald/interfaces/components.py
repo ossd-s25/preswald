@@ -523,6 +523,27 @@ def workflow_dag(workflow: Workflow, title: str = "Workflow Dependency Graph") -
         return error_component
 
 
+def query_playground(
+    source: Optional[str] = None,
+    size: float = 1.0,
+) -> Dict:
+    """Create a SQL playground component that allows queries of a data source."""
+    service = PreswaldService.get_instance()
+    component_id = generate_id("query_playground")
+    data_manager = service.data_manager
+    available_sources = data_manager._load_sources()
+    active_source = available_sources.get(source)
+    component = {
+        "type": "query_playground",
+        "id": component_id,
+        "size": size,
+        "data_sources": available_sources,  # Let the frontend know what's available
+        "active_source": active_source,  # Which dataset is being queried (if any)
+    }
+    service.append_component(component)
+    return component
+
+
 # Helpers
 
 
