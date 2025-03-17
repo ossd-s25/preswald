@@ -6,6 +6,7 @@ from typing import Dict, List, Optional
 
 import numpy as np
 import pandas as pd
+from agents import Agent, Runner
 
 from preswald.engine.service import PreswaldService
 from preswald.interfaces.workflow import Workflow
@@ -47,6 +48,42 @@ def button(label: str, size: float = 1.0):
     logger.debug(f"Created component: {component}")
     service.append_component(component)
     return component
+
+
+def chat(
+    label: str,
+    placeholder: str = "Ask me anything",
+    size: float = 1.0,
+    instructions="Provide the user with information about their data",
+) -> str:
+    """Create an AI chatbot component to query data in natural language."""
+    service = PreswaldService.get_instance()
+
+    # Create a consistent ID based on the label
+    component_id = f"text_input-{hashlib.md5(label.encode()).hexdigest()[:8]}"
+
+    agent = Agent(name=f"chat-agent_{component_id}", instructions=instructions)
+
+    # Get current state or use default
+    current_value = service.get_component_state(component_id)
+    if current_value is None:
+        current_value = ""
+
+    logger.debug(
+        f"Creating text input component with id {component_id}, label: {label}"
+    )
+    component = {
+        "type": "chat",
+        "id": component_id,
+        "label": label,
+        "placeholder": placeholder,
+        "value": current_value,
+        "size": size,
+    }
+    logger.debug(f"Created component: {component}")
+    service.append_component(component)
+
+    return Runner.run(agent, input=current_value)
 
 
 def checkbox(label: str, default: bool = False, size: float = 1.0) -> bool:
