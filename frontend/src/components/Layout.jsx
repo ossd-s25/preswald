@@ -20,11 +20,12 @@ import { cn } from '@/lib/utils';
 import Sidebar from './Sidebar';
 import TopBar from './TopBar';
 
-const navigation = [{ name: 'Dashboard', href: '/', icon: HomeIcon }];
+//const navigation = [{ name: 'Dashboard', href: '/', icon: HomeIcon }];
 
 export default function Layout({ branding, children }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  //const [sidebarOpen, setSidebarOpen] = useState(false);
+  //const [isCollapsed, setIsCollapsed] = useState(false);
+  let isCollapsed = true;
   const [faviconLoaded, setFaviconLoaded] = useState(false);
 
   useEffect(() => {
@@ -79,13 +80,16 @@ export default function Layout({ branding, children }) {
     }
   }, []);
 
+  /*
   const handleToggleSidebar = () => {
     setIsCollapsed(!isCollapsed);
   };
+  */
 
   return (
     <div className="min-h-screen bg-background">
       {/* Mobile Sidebar */}
+      {/*
       <Sidebar
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
@@ -93,21 +97,23 @@ export default function Layout({ branding, children }) {
         branding={branding || window.PRESWALD_BRANDING}
         isCollapsed={isCollapsed}
       />
+      */}
 
       {/* Main Content */}
       <div
         className={cn(
-          'flex flex-col min-h-screen',
-          'lg:pl-80 transition-all duration-300',
-          isCollapsed && 'lg:pl-20'
+          'flex-1 transition-all duration-300 ease-in-out',
+          isCollapsed ? 'ml-20' : 'ml-80'
         )}
       >
+        {/*
         <TopBar
           setSidebarOpen={setSidebarOpen}
           onToggleSidebar={handleToggleSidebar}
           isCollapsed={isCollapsed}
           branding={branding || window.PRESWALD_BRANDING}
         />
+        */}
 
         <main className="flex-1 py-10">
           <div className="px-4 sm:px-6 lg:px-8">{children}</div>
