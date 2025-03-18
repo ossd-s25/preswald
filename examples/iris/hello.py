@@ -1,7 +1,9 @@
 import plotly.express as px
 
-from preswald import connect, get_df, plotly, table, text
+from preswald import connect, get_df, plotly, sidebar, table, text
 
+
+sidebar(label="sidebar")
 
 # Report Title
 text(
