@@ -15,6 +15,7 @@ import ImageWidget from './widgets/ImageWidget';
 import MarkdownRendererWidget from './widgets/MarkdownRendererWidget';
 import ProgressWidget from './widgets/ProgressWidget';
 import SelectboxWidget from './widgets/SelectboxWidget';
+import SidebarWidget from './widgets/SidebarWidget';
 import SliderWidget from './widgets/SliderWidget';
 import SpinnerWidget from './widgets/SpinnerWidget';
 import TableViewerWidget from './widgets/TableViewerWidget';
@@ -236,6 +237,15 @@ const MemoizedComponent = memo(
 
       case 'dag':
         return <DAGVisualizationWidget {...commonProps} data={component.data || {}} />;
+
+      case 'sidebar':
+        return (
+          <SidebarWidget
+            {...commonProps}
+            className={component.className}
+            _size={component.size || 'default'}
+          />
+        );
 
       default:
         console.warn(`[DynamicComponents] Unknown component type: ${component.type}`);
