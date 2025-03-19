@@ -1,41 +1,191 @@
-import React from 'react';
+// import React, { useState, useEffect } from 'react';
+// import { Input } from '@/components/ui/input';
+// import { Label } from '@/components/ui/label';
+// import { Button } from '@/components/ui/button';
+// import { cn } from '@/lib/utils';
+// const ChatWidget = ({
+//   label,
+//   placeholder,
+//   id = 'chat',
+//   className,
+//   error,
+//   disabled = false,
+//   required = false,
+//   size = 'default', // "sm", "default", "lg"
+//   variant = 'default', // "default", "ghost"
+//   onChange,
+//   value = [], // Add value prop to receive chat history
+// }) => {
+//   const [message, setMessage] = useState('');
+//   const [chatHistory, setChatHistory] = useState(value);
+//   useEffect(() => {
+//     setChatHistory(value);
+//   }, [value]);
+//   const handleChange = (e) => {
+//     const newValue = e.target.value;
+//     console.log('[ChatWidget] Change event:', {
+//       id,
+//       oldValue: message,
+//       newValue: newValue,
+//       timestamp: new Date().toISOString(),
+//     });
+//     try {
+//       setMessage(newValue);
+//       console.log('[ChatWidget] State updated successfully:', {
+//         id,
+//         value: newValue,
+//       });
+//     } catch (error) {
+//       console.error('[ChatWidget] Error updating state:', {
+//         id,
+//         error: error.message,
+//       });
+//     }
+//   };
+//   const handleSend = () => {
+//     if (!message.trim()) return;
+//     const newMessage = {
+//       role: 'user',
+//       content: message,
+//     };
+//     const updatedChatHistory = [...chatHistory, newMessage];
+//     setChatHistory(updatedChatHistory);
+//     setMessage('');
+//     try {
+//       onChange?.(updatedChatHistory);
+//       console.log('[ChatWidget] Message sent successfully:', {
+//         id,
+//         message: newMessage,
+//       });
+//     } catch (error) {
+//       console.error('[ChatWidget] Error sending message:', {
+//         id,
+//         error: error.message,
+//       });
+//     }
+//   };
+//   // Size variants
+//   const sizeVariants = {
+//     sm: 'inputfield-size-sm',
+//     default: 'inputfield-size-default',
+//     lg: 'inputfield-size-lg',
+//   };
+//   return (
+//     <div className={cn('chatwidget-container', className)}>
+//       {label && (
+//         <Label
+//           htmlFor={id}
+//           className={cn(
+//             'chatwidget-label',
+//             error && 'chatwidget-error',
+//             disabled && 'chatwidget-disabled'
+//           )}
+//         >
+//           {label}
+//           {required && <span className="chatwidget-required">*</span>}
+//         </Label>
+//       )}
+//       <div className="chatwidget-history">
+//         {chatHistory.map((msg, index) => (
+//           <div key={index} className={`chatwidget-message ${msg.role}`}>
+//             <span>{msg.content}</span>
+//           </div>
+//         ))}
+//       </div>
+//       <textarea
+//         id={id}
+//         name={id}
+//         value={message}
+//         onChange={handleChange}
+//         placeholder={placeholder}
+//         disabled={disabled}
+//         className={cn(
+//           sizeVariants[size],
+//           variant === 'ghost' && 'chatwidget-variant-ghost',
+//           error && 'chatwidget-error-border'
+//         )}
+//         aria-invalid={error ? 'true' : undefined}
+//         required={required}
+//       />
+//       <Button onClick={handleSend} disabled={disabled || !message.trim()}>
+//         Send
+//       </Button>
+//       {error && <p className="chatwidget-error-message">{error}</p>}
+//     </div>
+//   );
+// };
+// export default ChatWidget;
+import React, { useEffect, useState } from 'react';
 
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 import { cn } from '@/lib/utils';
 
-const TextInputWidget = ({
+const ChatWidget = ({
   label,
   placeholder,
-  value = '',
   id = 'chat',
-  onChange,
   className,
   error,
   disabled = false,
   required = false,
-  type = 'text',
   size = 'default', // "sm", "default", "lg"
   variant = 'default', // "default", "ghost"
+  onChange,
+  value = [], // Add value prop to receive chat history
 }) => {
+  const [message, setMessage] = useState('');
+  const [chatHistory, setChatHistory] = useState(value);
+
+  useEffect(() => {
+    setChatHistory(Array.isArray(value) ? value : []);
+  }, [value]);
+
   const handleChange = (e) => {
     const newValue = e.target.value;
     console.log('[ChatWidget] Change event:', {
       id,
-      oldValue: value,
+      oldValue: message,
       newValue: newValue,
       timestamp: new Date().toISOString(),
     });
 
     try {
-      onChange?.(newValue);
+      setMessage(newValue);
       console.log('[ChatWidget] State updated successfully:', {
         id,
         value: newValue,
       });
     } catch (error) {
       console.error('[ChatWidget] Error updating state:', {
+        id,
+        error: error.message,
+      });
+    }
+  };
+
+  const handleSend = () => {
+    if (!message.trim()) return;
+
+    const newMessage = {
+      role: 'user',
+      content: message,
+    };
+
+    const updatedChatHistory = [...chatHistory, newMessage];
+    setChatHistory(updatedChatHistory);
+    setMessage('');
+
+    try {
+      onChange?.(updatedChatHistory);
+      console.log('[ChatWidget] Message sent successfully:', {
+        id,
+        message: newMessage,
+      });
+    } catch (error) {
+      console.error('[ChatWidget] Error sending message:', {
         id,
         error: error.message,
       });
@@ -50,37 +200,46 @@ const TextInputWidget = ({
   };
 
   return (
-    <div className={cn('inputfield-container', className)}>
+    <div className={cn('chatwidget-container', className)}>
       {label && (
         <Label
           htmlFor={id}
           className={cn(
-            'inputfield-label',
-            error && 'inputfield-error',
-            disabled && 'inputfield-disabled'
+            'chatwidget-label',
+            error && 'chatwidget-error',
+            disabled && 'chatwidget-disabled'
           )}
         >
           {label}
-          {required && <span className="inputfield-required">*</span>}
+          {required && <span className="chatwidget-required">*</span>}
         </Label>
       )}
-      <Input
-        type={type}
+      <div className="chatwidget-history">
+        {chatHistory.map((msg, index) => (
+          <div key={index} className={`chatwidget-message ${msg.role}`}>
+            <span>{msg.content}</span>
+          </div>
+        ))}
+      </div>
+      <textarea
         id={id}
         name={id}
-        value={value}
+        value={message}
         onChange={handleChange}
         placeholder={placeholder}
         disabled={disabled}
         className={cn(
           sizeVariants[size],
-          variant === 'ghost' && 'inputfield-variant-ghost',
-          error && 'inputfield-error-border'
+          variant === 'ghost' && 'chatwidget-variant-ghost',
+          error && 'chatwidget-error-border'
         )}
         aria-invalid={error ? 'true' : undefined}
         required={required}
       />
-      {error && <p className="inputfield-error-message">{error}</p>}
+      <Button onClick={handleSend} disabled={disabled || !message.trim()}>
+        Send
+      </Button>
+      {error && <p className="chatwidget-error-message">{error}</p>}
     </div>
   );
 };

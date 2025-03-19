@@ -1,16 +1,23 @@
 import hashlib
 import json
 import logging
+import os
 import uuid
 from typing import Dict, List, Optional
 
 import numpy as np
 import pandas as pd
-from agents import Agent, Runner
+import tomllib
+from openai import OpenAI
 
 from preswald.engine.service import PreswaldService
 from preswald.interfaces.workflow import Workflow
 
+
+with open("secrets.toml", "rb") as toml:
+    secrets = tomllib.load(toml)
+
+os.environ["OPENAI_API_KEY"] = secrets["data"]["openai"]["api_key"]
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -50,28 +57,21 @@ def button(label: str, size: float = 1.0):
     return component
 
 
-def chat(
-    label: str,
-    placeholder: str = "Ask me anything",
-    size: float = 1.0,
-    instructions="Provide the user with information about their data",
-) -> str:
+def chat(label: str, placeholder: str = "Ask me anything", size: float = 1.0) -> str:
     """Create an AI chatbot component to query data in natural language."""
+
     service = PreswaldService.get_instance()
 
     # Create a consistent ID based on the label
-    component_id = f"text_input-{hashlib.md5(label.encode()).hexdigest()[:8]}"
-
-    agent = Agent(name=f"chat-agent_{component_id}", instructions=instructions)
+    component_id = f"chat-{hashlib.md5(label.encode()).hexdigest()[:8]}"
 
     # Get current state or use default
     current_value = service.get_component_state(component_id)
     if current_value is None:
-        current_value = ""
+        current_value = []
 
-    logger.debug(
-        f"Creating text input component with id {component_id}, label: {label}"
-    )
+    logger.debug(f"Creating chat component with id {component_id}, label: {label}")
+
     component = {
         "type": "chat",
         "id": component_id,
@@ -80,10 +80,36 @@ def chat(
         "value": current_value,
         "size": size,
     }
-    logger.debug(f"Created component: {component}")
-    service.append_component(component)
 
-    return Runner.run(agent, input=current_value)
+    logger.debug(f"Created component: {component}")
+
+    # Retrieve the user's input
+    chat_history = service.get_component_state(component_id, [])
+    if chat_history and chat_history[-1]["role"] == "user":
+        # user_input = chat_history[-1]["content"]
+        # logger.info(user_input)
+        # Make a call to the AI agent
+        client = OpenAI()
+        completion = client.chat.completions.create(
+            model="gpt-4o", messages=chat_history
+        )
+
+        response = completion.choices[0].message.content
+
+        # logger.info(f"RESPONSE: {response}")
+        # Send the AI agent's response back as a new message
+        response_message = {
+            "role": "assistant",
+            "content": f"Data-Bot: {response}",
+        }
+
+        # Update the component state with the new message
+        chat_history.append(response_message)
+        service._update_component_states({component_id: chat_history})
+        # logger.info('FINAL: ' + str(service.get_component_state(component_id, [])))
+
+    service.append_component(component)
+    return current_value
 
 
 def checkbox(label: str, default: bool = False, size: float = 1.0) -> bool:
