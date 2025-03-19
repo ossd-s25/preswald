@@ -11,6 +11,7 @@ import tomllib
 from openai import OpenAI
 
 from preswald.engine.service import PreswaldService
+from preswald.interfaces.data import get_df
 from preswald.interfaces.workflow import Workflow
 
 
@@ -83,20 +84,50 @@ def chat(label: str, placeholder: str = "Ask me anything", size: float = 1.0) ->
 
     logger.debug(f"Created component: {component}")
 
+    tools = [
+        {
+            "type": "function",
+            "function": {
+                "name": "get_df",
+                "description": "Get a dataframe from the named data source. If the source is a database/has multiple tables, you must specify a table_name",
+                "strict": True,
+                "parameters": {
+                    "type": "object",
+                    "required": ["data_source", "table_name"],
+                    "properties": {
+                        "data_source": {
+                            "type": "string",
+                            "description": "The name of the data source to fetch data from",
+                        },
+                        "table_name": {
+                            "type": "string",
+                            "description": "The name of a specific table within the data source (optional)",
+                        },
+                    },
+                    "additionalProperties": False,
+                },
+            },
+        },
+    ]
+
     # Retrieve the user's input
     chat_history = service.get_component_state(component_id, [])
     if chat_history and chat_history[-1]["role"] == "user":
-        # user_input = chat_history[-1]["content"]
-        # logger.info(user_input)
         # Make a call to the AI agent
         client = OpenAI()
         completion = client.chat.completions.create(
-            model="gpt-4o", messages=chat_history
+            model="gpt-4o", messages=chat_history, tools=tools
         )
 
-        response = completion.choices[0].message.content
+        if completion.choices[0].message.tool_calls:
+            tool_call = completion.choices[0].message.tool_calls[0]
+            args = json.loads(tool_call.function.arguments)
+            source = args["data_source"]
+            response = get_df(source)
 
-        # logger.info(f"RESPONSE: {response}")
+        else:
+            response = completion.choices[0].message.content
+
         # Send the AI agent's response back as a new message
         response_message = {
             "role": "assistant",
@@ -106,7 +137,6 @@ def chat(label: str, placeholder: str = "Ask me anything", size: float = 1.0) ->
         # Update the component state with the new message
         chat_history.append(response_message)
         service._update_component_states({component_id: chat_history})
-        # logger.info('FINAL: ' + str(service.get_component_state(component_id, [])))
 
     service.append_component(component)
     return current_value

@@ -5,10 +5,10 @@ from preswald import chat, connect, get_df, plotly, table, text
 
 chat("Default")
 
-# Report Title
-text(
-    "# Iris Data Viz with Preswald \n This report provides a visual analysis of the famous Iris dataset. Each plot explores different characteristics of the iris flowers across three species: Setosa, Versicolor, and Virginica."
-)
+# # Report Title
+# text(
+#     "# Iris Data Viz with Preswald \n This report provides a visual analysis of the famous Iris dataset. Each plot explores different characteristics of the iris flowers across three species: Setosa, Versicolor, and Virginica."
+# )
 
 # Load the CSV
 connect()  # Load in all sources, which by default is the iris_csv
