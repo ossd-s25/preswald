@@ -6,6 +6,7 @@ from typing import Any, Dict, List, Union
 
 import numpy as np
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -21,7 +22,7 @@ class PreswaldJSONEncoder(json.JSONEncoder):
                 obj, (np.int_, np.intc, np.intp, np.int8, np.int16, np.int32, np.int64)
             ):
                 return int(obj)
-            elif isinstance(obj, (np.float_, np.float16, np.float32, np.float64)):
+            elif isinstance(obj, (np.float64, np.float16, np.float32, np.float64)):
                 if np.isnan(obj):
                     return None
                 return float(obj)
@@ -61,7 +62,7 @@ class PreswaldJSONEncoder(json.JSONEncoder):
         """Handle array values recursively."""
         if isinstance(arr, (list, tuple)):
             return [self._handle_array_values(x) for x in arr]
-        elif isinstance(arr, (float, np.float_, np.float16, np.float32, np.float64)):
+        elif isinstance(arr, (float, np.float64, np.float16, np.float32, np.float64)):
             if np.isnan(arr):
                 return None
             return float(arr)

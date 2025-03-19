@@ -266,9 +266,25 @@ class ServerPreswaldService:
     async def _handle_component_update(self, client_id: str, message: Dict[str, Any]):
         """Handle component state update messages"""
         states = message.get("states", {})
+        print(f"STATES: {states}")
         if not states:
             await self._send_error(client_id, "Component update missing states")
             raise ValueError("Component update missing states")
+
+        for _component_id, value in states.items():
+            if isinstance(value, dict) and "query" in value and "source" in value:
+                query = value["query"]
+                source = value["source"]
+                if query and source:
+                    logger.info(
+                        f"[Query Execution] Running query on source '{source}': {query}"
+                    )
+                    # Execute the SQL query using DataManager
+                    self.data_manager.connect()
+                    result_df = self.data_manager.query(query, source_name=source)
+                    todict = result_df.to_dict()
+                    print(todict)
+                    await self._broadcast_state_updates(todict, exclude_client=None)
 
         # Update component states
         self._update_component_states(states)
