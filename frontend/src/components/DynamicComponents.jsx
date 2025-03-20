@@ -13,6 +13,7 @@ import DAGVisualizationWidget from './widgets/DAGVisualizationWidget';
 import DataVisualizationWidget from './widgets/DataVisualizationWidget';
 import ImageWidget from './widgets/ImageWidget';
 import MarkdownRendererWidget from './widgets/MarkdownRendererWidget';
+import MatplotlibWidget from './widgets/MatplotlibWidget';
 import ProgressWidget from './widgets/ProgressWidget';
 import SelectboxWidget from './widgets/SelectboxWidget';
 import SidebarWidget from './widgets/SidebarWidget';
@@ -225,6 +226,15 @@ const MemoizedComponent = memo(
             {...commonProps}
             disabled={component.disabled}
             onConnect={(connectionData) => handleUpdate(componentId, connectionData)}
+          />
+        );
+
+      case 'matplotlib':
+        return (
+          <MatplotlibWidget
+            {...commonProps}
+            className={component.className}
+            _size={component.size || 'default'}
           />
         );
 

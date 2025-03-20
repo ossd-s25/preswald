@@ -4,7 +4,7 @@ import { Card } from '@/components/ui/card';
 
 import { cn } from '@/lib/utils';
 
-const HelloWorldWidget = ({
+const MatplotlibWidget = ({
   _label,
   className,
   _size = 'default', // "sm", "default", "lg"
