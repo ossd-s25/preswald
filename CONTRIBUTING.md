@@ -8,10 +8,12 @@ Thank you for your interest in contributing to **Preswald**! This document outli
 2. [Setup Guide](#setup-guide)
 3. [Development Workflow](#development-workflow)
 4. [Style Guide](#style-guide)
-5. [Pull Request Guidelines](#pull-request-guidelines)
-6. [Issue Reporting Guidelines](#issue-reporting-guidelines)
-7. [Community Support](#community-support)
-8. [Acknowledgments](#acknowledgments)
+5. [Code Quality](#code-quality)
+6. [Claiming an Issue](#claiming-an-issue)
+7. [Pull Request Guidelines](#pull-request-guidelines)
+8. [Issue Reporting Guidelines](#issue-reporting-guidelines)
+9. [Community Support](#community-support)
+10. [Acknowledgments](#acknowledgments)
 
 ## Project Structure
 
