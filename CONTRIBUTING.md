@@ -146,6 +146,9 @@ These configurations ensure your code remains consistent with our standards when
    ```
    Make sure to do step 5 for **all** directories in `examples`, not just `earthquakes`
 
+## Claiming an Issue
+
+Issues are assigned and reviewed on a first come first serve basis. When you begin work on an issue, ensure you leave a comment acknowledging that you have done so such that other users who may be interested in the issue are aware of your work. 
 
 ## Pull Request Guidelines
 
