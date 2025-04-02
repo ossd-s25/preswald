@@ -256,7 +256,11 @@ def deploy(script, target, port, log_level, github, api_key):  # noqa: C901
             click.echo("Starting production deployment... 🚀")
             try:
                 for status_update in deploy_app(
-                    script, target, port=port, github_username=github.lower() if github else None, api_key=api_key
+                    script,
+                    target,
+                    port=port,
+                    github_username=github.lower() if github else None,
+                    api_key=api_key,
                 ):
                     status = status_update.get("status", "")
                     message = status_update.get("message", "")
@@ -481,6 +485,49 @@ def tutorial(ctx):
     with contextlib.chdir(tutorial_dir):
         # Invoke the 'run' command from the tutorial directory
         ctx.invoke(run, port=8501)
+
+
+@cli.command()
+@click.option(
+    "--format",
+    "export_format",
+    type=click.Choice(["pdf"], case_sensitive=False),
+    required=True,
+    help="Export format (e.g., pdf)",
+)
+@click.option("--output", "-o", default="page.pdf", help="Output file name")
+@click.option("--url", default="http://localhost:8501", help="URL to export")
+def export(export_format, output, url):
+    """Export a webpage using the specified format.
+
+    Example usage:
+      preswald export --format pdf --output output/app-report.pdf
+    """
+    if export_format.lower() == "pdf":
+        try:
+            from playwright.sync_api import sync_playwright
+        except ImportError:
+            click.echo(
+                "Error: Playwright is not installed. Install it via 'pip install playwright' and run 'playwright install'"
+            )
+            sys.exit(1)
+
+        with sync_playwright() as p:
+            # PDF generation is supported in Chromium
+            browser = p.chromium.launch()
+            context = browser.new_context()
+            page = context.new_page()
+
+            # Navigate to the provided URL
+            page.goto(url)
+
+            # Save the page as a PDF with background graphics
+            page.pdf(path=output, print_background=True)
+
+            browser.close()
+        click.echo(f"PDF saved to {output}")
+    else:
+        click.echo(f"Error: Export format {export_format} is not supported")
 
 
 if __name__ == "__main__":
