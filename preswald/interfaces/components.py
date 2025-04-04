@@ -12,6 +12,7 @@ from typing import Dict, List, Optional
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import tomllib
 
 # from PIL import Image
 # try:
@@ -97,6 +98,14 @@ def chat(source: str, table: Optional[str] = None) -> Dict:
     if current_state is None:
         current_state = {"messages": [], "source": source}
 
+    # Get all data sources
+    with open("preswald.toml", "rb") as f:
+        config = tomllib.load(f)
+
+    source_list = []
+    for source_path in config["data"]:
+        source_list.append(source_path)
+
     # Get dataframe from source
     df = (
         service.data_manager.get_df(source)
@@ -132,6 +141,7 @@ def chat(source: str, table: Optional[str] = None) -> Dict:
         "config": {
             "source": source,
             "data": serializable_data,
+            "sourceList": source_list,
         },
     }
 

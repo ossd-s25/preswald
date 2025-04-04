@@ -14,6 +14,7 @@ import { createChatCompletion } from '@/services/openai';
 const ChatWidget = ({
   sourceId = null,
   sourceData = null,
+  sourceList = [],
   value = { messages: [] },
   onChange,
   className,
@@ -225,6 +226,21 @@ const ChatWidget = ({
                 </Button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {showSettings && (
+        <div className="border-b bg-muted/40">
+          <div className="px-3 sm:px-4 py-3">
+            <h3 className="text-sm font-medium">Data Source</h3>
+            <select className="flex-1 transition-colors text-sm h-8 bg-white appearance-none border border-gray-300 rounded px-2">
+              {sourceList.map((source, index) => (
+                <option key={index} value={source.replace(' ', '')}>
+                  {source}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
       )}

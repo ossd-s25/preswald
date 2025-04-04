@@ -218,6 +218,7 @@ const MemoizedComponent = memo(
             {...props}
             sourceId={component.config?.source || null}
             sourceData={component.config?.data || null}
+            sourceList={component.config?.sourceList || null}
             value={component.value || component.state || { messages: [] }}
             onChange={(value) => {
               handleUpdate(componentId, value);
