@@ -93,6 +93,15 @@ def chat(source: str, table: Optional[str] = None) -> Dict:
     # Create a consistent ID based on the source
     component_id = f"chat-{hashlib.md5(str(source).encode()).hexdigest()[:8]}"
 
+    selection_component_id = (
+        f"chat_select-{hashlib.md5(str(source).encode()).hexdigest()[:8]}"
+    )
+
+    # Get selected data source or default to initialized source
+    selection_current_value = (
+        service.get_component_state(selection_component_id) or source
+    )
+
     # Get current state or initialize empty
     current_state = service.get_component_state(component_id)
     if current_state is None:
@@ -108,9 +117,9 @@ def chat(source: str, table: Optional[str] = None) -> Dict:
 
     # Get dataframe from source
     df = (
-        service.data_manager.get_df(source)
+        service.data_manager.get_df(selection_current_value)
         if table is None
-        else service.data_manager.get_df(source, table)
+        else service.data_manager.get_df(selection_current_value, table)
     )
 
     # Convert DataFrame to serializable format
@@ -131,7 +140,9 @@ def chat(source: str, table: Optional[str] = None) -> Dict:
             processed_records.append(processed_record)
         serializable_data = convert_to_serializable(processed_records)
 
-    logger.debug(f"Creating chat component with id {component_id}, source: {source}")
+    logger.debug(
+        f"Creating chat component with id {component_id}, source: {selection_current_value}"
+    )
     component = {
         "type": "chat",
         "id": component_id,
@@ -139,11 +150,22 @@ def chat(source: str, table: Optional[str] = None) -> Dict:
             "messages": current_state.get("messages", []),
         },
         "config": {
-            "source": source,
+            "source": selection_current_value,
             "data": serializable_data,
             "sourceList": source_list,
         },
     }
+
+    source_selection_component = {
+        "type": "selectbox",
+        "id": selection_component_id,
+        "label": "Select Data Source",
+        "options": source_list,
+        "value": source,
+        "size": 1,
+    }
+
+    service.append_component(source_selection_component)
 
     logger.debug(f"Created component: {component}")
     service.append_component(component)
