@@ -102,6 +102,12 @@ class S3CSVConfig:
     s3_url_style: str = "path"
 
 
+@dataclass
+class ParquetConfig:
+    path: str
+    columns: Optional[list[str]]
+
+
 class DataSource:
     """Base class for all data sources"""
 
@@ -357,6 +363,42 @@ class APISource(DataSource):
         return self._duckdb.execute(f"SELECT * FROM {self._table_name}").df()
 
 
+class ParquetSource(DataSource):
+    def __init__(
+        self, name: str, config: ParquetConfig, duckdb_conn: duckdb.DuckDBPyConnection
+    ):
+        super().__init__(name, duckdb_conn)
+        self.path = config.path
+        self.columns = config.columns
+        self._table_name = f"parquet_{name}_{uuid.uuid4().hex[:8]}"
+
+        try:
+            # Load Parquet using DuckDB
+            if self.columns:
+                column_str = ", ".join(f'"{col}"' for col in self.columns)
+                self._duckdb.execute(f"""
+                    CREATE TABLE {self._table_name} AS
+                    SELECT {column_str}
+                    FROM read_parquet('{self.path}')
+                """)
+            else:
+                self._duckdb.execute(f"""
+                    CREATE TABLE {self._table_name} AS
+                    SELECT * FROM read_parquet('{self.path}')
+                """)
+        except Exception as e:
+            raise Exception(
+                f"Failed to load parquet file '{self.path}' using DuckDB: {e!s}"
+            ) from e
+
+    def query(self, sql: str) -> pd.DataFrame:
+        query = sql.replace(self.name, self._table_name)
+        return self._duckdb.execute(query).df()
+
+    def to_df(self) -> pd.DataFrame:
+        return self._duckdb.execute(f"SELECT * FROM {self._table_name}").df()
+
+
 class DataManager:
     def __init__(self, preswald_path: str, secrets_path: Optional[str] = None):
         self.preswald_path = preswald_path
@@ -430,6 +472,13 @@ class DataManager:
                         s3_url_style=source_config.get("s3_url_style", "path"),
                     )
                     self.sources[name] = S3CSVSource(name, cfg, self.duckdb_conn)
+
+                elif source_type == "parquet":
+                    cfg = ParquetConfig(
+                        path=source_config["path"],
+                        columns=source_config.get("columns"),
+                    )
+                    self.sources[name] = ParquetSource(name, cfg, self.duckdb_conn)
 
             except Exception as e:
                 logger.error(f"Error initializing {source_type} source '{name}': {e}")
