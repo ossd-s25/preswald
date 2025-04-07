@@ -97,11 +97,6 @@ def chat(source: str, table: Optional[str] = None) -> Dict:
         f"chat_select-{hashlib.md5(str(source).encode()).hexdigest()[:8]}"
     )
 
-    # Get selected data source or default to initialized source
-    selection_current_value = (
-        service.get_component_state(selection_component_id) or source
-    )
-
     # Get current state or initialize empty
     current_state = service.get_component_state(component_id)
     if current_state is None:
@@ -114,6 +109,13 @@ def chat(source: str, table: Optional[str] = None) -> Dict:
     source_list = []
     for source_path in config["data"]:
         source_list.append(source_path)
+
+    # Get selected data source or default to initialized source
+    selection_current_value = service.get_component_state(selection_component_id)
+    if selection_current_value is None:
+        selection_current_value = (
+            source if source is not None else (source_list[0] if source_list else None)
+        )
 
     # Get dataframe from source
     df = (
@@ -166,6 +168,8 @@ def chat(source: str, table: Optional[str] = None) -> Dict:
     }
 
     service.append_component(source_selection_component)
+
+    logger.debug(f"SOURCE FROM DROPDOWN: {selection_current_value}")
 
     logger.debug(f"Created component: {component}")
     service.append_component(component)
