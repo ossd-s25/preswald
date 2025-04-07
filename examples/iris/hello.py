@@ -2,13 +2,16 @@
 # import imageio.v3 as iio
 # import numpy as np
 import plotly.express as px
+import tomllib
 
 from preswald import (
+    Workflow,
     chat,
     connect,
     # fastplotlib,
     get_df,
     plotly,
+    selectbox,
     sidebar,
     table,
     text,
@@ -168,8 +171,33 @@ text(
 table(df)
 
 # Add an interactive chat interface
-text(
-    "## Interactive Chat Interface\nUse this chat interface to ask questions about the iris dataset analysis. You can inquire about specific patterns, request explanations of the visualizations, or ask for additional insights."
-)
 
-chat("iris_csv")
+
+workflow = Workflow()
+
+
+@workflow.atom()
+def chat_with_selectbox():
+    text(
+        "## Interactive Chat Interface\nUse this chat interface to ask questions about the iris dataset analysis. You can inquire about specific patterns, request explanations of the visualizations, or ask for additional insights."
+    )
+    # Get all data sources
+    with open("preswald.toml", "rb") as f:
+        config = tomllib.load(f)
+
+    source_list = []
+
+    for source_path in config["data"]:
+        source_list.append(source_path)
+
+    # Create a selectbox for choosing a column to visualize
+    source_choice = selectbox(
+        label="Choose a dataset as chat source",
+        options=source_list,
+    )
+
+    # Create and display a histogram based on the selected column
+    chat(source_choice)
+
+
+results = workflow.execute()
