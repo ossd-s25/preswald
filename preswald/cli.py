@@ -521,6 +521,9 @@ def export(export_format, output, url):
             # Navigate to the provided URL
             page.goto(url)
 
+            # Wait for elements to load
+            page.wait_for_selector("div.dynamiccomponent-container")
+
             # Save the page as a PDF with background graphics
             page.pdf(path=output, print_background=True)
 
