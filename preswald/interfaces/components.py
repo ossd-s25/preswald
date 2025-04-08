@@ -12,7 +12,7 @@ from typing import Dict, List, Optional
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import tomllib
+import tomli
 
 # from PIL import Image
 # try:
@@ -99,13 +99,17 @@ def chat(source: str, table: Optional[str] = None) -> Dict:
         current_state = {"messages": [], "source": source}
 
     # Get API key from secrets.toml
-    with open("secrets.toml", "rb") as toml:
-        secrets = tomllib.load(toml)
+    try:
+        with open("secrets.toml", "rb") as toml:
+            secrets = tomli.load(toml)
 
-    if secrets and secrets["data"]["openai"]["api_key"]:
-        api_key = secrets["data"]["openai"]["api_key"]
+        if secrets and secrets["data"]["openai"]["api_key"]:
+            api_key = secrets["data"]["openai"]["api_key"]
 
-    else:
+        else:
+            api_key = None
+
+    except FileNotFoundError:
         api_key = None
 
     # Get dataframe from source
