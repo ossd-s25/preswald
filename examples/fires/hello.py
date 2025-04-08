@@ -4,10 +4,6 @@ import plotly.express as px
 from preswald import connect, get_df, plotly, text
 
 
-text("Inline: $E=mc^2$")
-
-text("Block:\n\n$$\\int_0^1 x^2 \\, dx = \\frac{1}{3}$$")
-
 # Display the dashboard title
 text("# Fire Incident Analytics Dashboard 🔥")
 
