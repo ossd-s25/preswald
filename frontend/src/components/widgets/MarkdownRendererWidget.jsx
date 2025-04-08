@@ -1,4 +1,7 @@
+import 'katex/dist/katex.min.css';
+import rehypeKatex from 'rehype-katex';
 import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
 
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
@@ -37,7 +40,8 @@ const MarkdownRendererWidget = ({ markdown, value, error, className }) => {
         prose-code:after:content-none"
       >
         <ReactMarkdown
-          remarkPlugins={[remarkGfm]}
+          remarkPlugins={[remarkGfm, remarkMath]}
+          rehypePlugins={[rehypeKatex]}
           components={{
             code({ node, inline, className, children, ...props }) {
               // Only apply syntax highlighting if:
