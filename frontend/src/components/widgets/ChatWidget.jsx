@@ -1,7 +1,10 @@
 'use client';
 
+import 'katex/dist/katex.min.css';
 import { Bot, Loader2, Send, Settings, User } from 'lucide-react';
+import rehypeKatex from 'rehype-katex';
 import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
@@ -110,7 +113,7 @@ const ChatWidget = ({
       - Include specific examples from the dataset when relevant
       - Highlight any assumptions or limitations in your analysis
       
-      When answering questions, always reference specific data points to support your conclusions and when asked for data, show as markdown table format`;
+      When answering questions, always reference specific data points to support your conclusions and when asked for data, show as markdown table format. Answer with LaTeX formatted equations enclosed in $ whenever appropriate.`;
     } catch (error) {
       console.error('Error formatting source context:', error);
       return null;
@@ -290,7 +293,8 @@ const ChatWidget = ({
                       ) : (
                         <div className="markdown-content">
                           <ReactMarkdown
-                            remarkPlugins={[remarkGfm]}
+                            remarkPlugins={[remarkGfm, remarkMath]}
+                            rehypePlugins={[rehypeKatex]}
                             className="whitespace-pre-wrap break-words leading-relaxed"
                             components={{
                               table: ({ node, ...props }) => (
