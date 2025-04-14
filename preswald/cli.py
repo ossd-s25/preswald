@@ -58,7 +58,6 @@ def init(name):
             "preswald.toml": "preswald.toml",
             "secrets.toml": "secrets.toml",
             ".gitignore": "gitignore",
-            "workbook.md": "workbook.md",
             "pyproject.toml": "pyproject.toml",
             "data/sample.csv": "sample.csv",
         }
@@ -255,6 +254,7 @@ def deploy(script, target, port, log_level, github, api_key):  # noqa: C901
         if target == "structured":
             click.echo("Starting production deployment... 🚀")
             try:
+                service_url_message = None
                 for status_update in deploy_app(
                     script,
                     target,
@@ -265,16 +265,20 @@ def deploy(script, target, port, log_level, github, api_key):  # noqa: C901
                     status = status_update.get("status", "")
                     message = status_update.get("message", "")
 
-                    if "App is available here" in message:
+                    service_url_str = "App is available here "
+                    if service_url_str in message:
+                        service_url = message[len(service_url_str) :]
+                        service_url_message = service_url_str + service_url
                         continue
 
                     custom_subdomain_str = "Custom domain assigned at "
                     if custom_subdomain_str in message:
-                        custom_subdomain_str = "Custom domain assigned at "
-                        custom_subdomain_url = (
-                            "https://" + message[len(custom_subdomain_str) :]
-                        )
-                        message = custom_subdomain_str + custom_subdomain_url
+                        custom_subdomain = message[len(custom_subdomain_str) :]
+                        if custom_subdomain.strip():
+                            custom_subdomain_url = "https://" + custom_subdomain
+                            message = custom_subdomain_str + custom_subdomain_url
+                        elif service_url_message:
+                            message = service_url_message
 
                     if status == "error":
                         click.echo(click.style(f"❌ {message}", fg="red"))
@@ -464,8 +468,6 @@ def tutorial(ctx):
 
     This command runs the tutorial app located in the package's tutorial directory.
     """
-    import contextlib
-
     import preswald
 
     package_dir = os.path.dirname(preswald.__file__)
@@ -481,10 +483,16 @@ def tutorial(ctx):
 
     click.echo("🚀 Launching the Preswald tutorial app! 🎉")
 
-    # Use context manager to temporarily change directory
-    with contextlib.chdir(tutorial_dir):
+    # Save current directory
+    current_dir = os.getcwd()
+    try:
+        # Change to tutorial directory
+        os.chdir(tutorial_dir)
         # Invoke the 'run' command from the tutorial directory
         ctx.invoke(run, port=8501)
+    finally:
+        # Change back to original directory
+        os.chdir(current_dir)
 
 
 if __name__ == "__main__":
