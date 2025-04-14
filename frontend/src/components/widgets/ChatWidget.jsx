@@ -113,7 +113,7 @@ const ChatWidget = ({
       - Include specific examples from the dataset when relevant
       - Highlight any assumptions or limitations in your analysis
       
-      When answering questions, always reference specific data points to support your conclusions and when asked for data, show as markdown table format. Answer with LaTeX formatted equations enclosed in $ whenever appropriate.`;
+      When answering questions, always reference specific data points to support your conclusions and when asked for data, show as markdown table format. Answer with LaTeX formatted equations enclosed in $ whenever appropriate, including any times that you write a mathematical expression.`;
     } catch (error) {
       console.error('Error formatting source context:', error);
       return null;
