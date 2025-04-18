@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from typing import Any, Dict
+from typing import Any
 
 from fastapi import WebSocket, WebSocketDisconnect
 
@@ -34,7 +34,7 @@ class ServerPreswaldService(BasePreswaldService):
         self.branding_manager = None  # set during server creation
 
         # Initialize session tracking
-        self.websocket_connections: Dict[str, WebSocket] = {}
+        self.websocket_connections: dict[str, WebSocket] = {}
 
     async def register_client(
         self, client_id: str, websocket: WebSocket
@@ -82,3 +82,20 @@ class ServerPreswaldService(BasePreswaldService):
         except Exception as e:
             logger.error(f"Error broadcasting connections: {e}")
             # Don't raise the exception to prevent disrupting the main flow
+
+    async def _broadcast_debug_state(self):
+        """Broadcast debug state snapshots to all clients"""
+        if not self.debug_mode:
+            return
+
+        try:
+            state_snapshot = self.get_state_snapshot()
+            for websocket in self.websocket_connections.values():
+                await websocket.send_json(
+                    {
+                        "channel": "__debug__",
+                        "payload": state_snapshot,
+                    }
+                )
+        except Exception as e:
+            logger.error(f"Error broadcasting debug state: {e}")

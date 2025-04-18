@@ -1,6 +1,8 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { BrowserRouter as Router } from 'react-router-dom';
+
+import DebugPanel from '@/components/common/DebugPanel';
 
 import Layout from './components/Layout';
 import LoadingState from './components/LoadingState';
@@ -13,6 +15,7 @@ const App = () => {
   const [config, setConfig] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
   const [areComponentsLoading, setAreComponentsLoading] = useState(true);
+  const [debugMode, setDebugMode] = useState(false);
 
   useEffect(() => {
     comm.connect();
@@ -37,6 +40,13 @@ const App = () => {
     document.addEventListener('visibilitychange', updateTitle);
     return () => document.removeEventListener('visibilitychange', updateTitle);
   }, [config]);
+
+  useEffect(() => {
+    fetch('/api/config')
+      .then((res) => res.json())
+      .then((config) => setDebugMode(config.debug || false))
+      .catch((err) => console.error('Error fetching config:', err));
+  }, []);
 
   const handleMessage = (message) => {
     console.log('[App] Received message:', message);
@@ -162,6 +172,7 @@ const App = () => {
             handleComponentUpdate={handleComponentUpdate}
           />
         )}
+        {debugMode && <DebugPanel />}
       </Layout>
     </Router>
   );
