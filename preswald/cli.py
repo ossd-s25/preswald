@@ -169,7 +169,7 @@ def run(port, log_level, disable_new_tab):
 @click.argument("script", default=None, required=False)
 @click.option(
     "--target",
-    type=click.Choice(["local", "gcp", "aws", "structured"], case_sensitive=False),
+    type=click.Choice(["local", "gcp", "aws"], case_sensitive=False),
     default="local",
     help="Target platform for deployment.",
 )
@@ -181,14 +181,6 @@ def run(port, log_level, disable_new_tab):
     ),
     default=None,
     help="Set the logging level (overrides config file)",
-)
-@click.option(
-    "--github",
-    help="GitHub username for structured deployment",
-)
-@click.option(
-    "--api-key",
-    help="Structured Cloud API key for structured deployment",
 )
 def deploy(script, target, port, log_level, github, api_key):  # noqa: C901
     """
@@ -251,62 +243,27 @@ def deploy(script, target, port, log_level, github, api_key):  # noqa: C901
             },
         )
 
-        if target == "structured":
-            click.echo("Starting production deployment... 🚀")
-            try:
-                for status_update in deploy_app(
-                    script,
-                    target,
-                    port=port,
-                    github_username=github.lower() if github else None,
-                    api_key=api_key,
-                ):
-                    status = status_update.get("status", "")
-                    message = status_update.get("message", "")
+        url = deploy_app(script, target, port=port)
 
-                    if "App is available here" in message:
-                        continue
+        # Deployment Success Message
+        success_message = f"""
 
-                    custom_subdomain_str = "Custom domain assigned at "
-                    if custom_subdomain_str in message:
-                        custom_subdomain_str = "Custom domain assigned at "
-                        custom_subdomain_url = (
-                            "https://" + message[len(custom_subdomain_str) :]
-                        )
-                        message = custom_subdomain_str + custom_subdomain_url
+        ===========================================================\n
+        🎉 Deployment successful! ✅
 
-                    if status == "error":
-                        click.echo(click.style(f"❌ {message}", fg="red"))
-                    elif status == "success":
-                        click.echo(click.style(f"✅ {message}", fg="green"))
-                    else:
-                        click.echo(f"i {message}")
+        🌐 Your app is live and running at:
+        {url}
 
-            except Exception as e:
-                click.echo(click.style(f"Deployment failed: {e!s} ❌", fg="red"))
-                return
-        else:
-            url = deploy_app(script, target, port=port)
+        💡 Next Steps:
+            - Open the URL above in your browser to view your app
 
-            # Deployment Success Message
-            success_message = f"""
+        🚀 Deployment Summary:
+            - App: {script}
+            - Environment: {target}
+            - Port: {port}
+        """
 
-            ===========================================================\n
-            🎉 Deployment successful! ✅
-
-            🌐 Your app is live and running at:
-            {url}
-
-            💡 Next Steps:
-                - Open the URL above in your browser to view your app
-
-            🚀 Deployment Summary:
-                - App: {script}
-                - Environment: {target}
-                - Port: {port}
-            """
-
-            click.echo(click.style(success_message, fg="green"))
+        click.echo(click.style(success_message, fg="green"))
 
     except Exception as e:
         click.echo(click.style(f"Deployment failed: {e!s} ❌", fg="red"))
@@ -316,7 +273,7 @@ def deploy(script, target, port, log_level, github, api_key):  # noqa: C901
 @cli.command()
 @click.option(
     "--target",
-    type=click.Choice(["local", "gcp", "aws", "structured"], case_sensitive=False),
+    type=click.Choice(["local", "gcp", "aws"], case_sensitive=False),
     default="local",
     help="Target platform to stop the deployment from.",
 )
@@ -327,7 +284,7 @@ def stop(target):
     This command must be run from the same directory as your Preswald app.
     """
     try:
-        from preswald.deploy import cleanup_gcp_deployment, stop_structured_deployment
+        from preswald.deploy import cleanup_gcp_deployment
 
         # Track stop command
         telemetry.track_command("stop", {"target": target})
@@ -339,17 +296,6 @@ def stop(target):
 
         current_dir = os.getcwd()
         print(f"Current directory: {current_dir}")
-        if target == "structured":
-            try:
-                response_json = stop_structured_deployment(current_dir)
-                click.echo(response_json["message"])
-                click.echo(
-                    click.style(
-                        "✅ Production deployment stopped successfully.", fg="green"
-                    )
-                )
-            except Exception as e:
-                click.echo(click.style(f"❌ {e!s}", fg="red"))
         if target == "gcp":
             try:
                 click.echo("Starting GCP deployment cleanup... 🧹")
@@ -379,82 +325,6 @@ def stop(target):
     except Exception:
         sys.exit(1)
 
-
-@cli.command()
-def deployments():
-    """
-    Show all deployments for your Preswald app.
-
-    This command displays information about your deployments on Structured Cloud.
-    Must be run from the directory containing your Preswald app.
-    """
-    try:
-        script = os.path.join(os.getcwd(), ".env.structured")
-        if not os.path.exists(script):
-            click.echo(
-                click.style(
-                    "Error: No Preswald app found in current directory. ❌", fg="red"
-                )
-            )
-            return
-
-        # Track deployments command
-        telemetry.track_command("deployments", {})
-
-        from preswald.deploy import get_structured_deployments
-
-        try:
-            result = get_structured_deployments(script)
-
-            # Print user info
-            user = result.get("user", {})
-            click.echo("\n" + click.style("User Information:", fg="blue", bold=True))
-            click.echo(f"Username: {user.get('username')}")
-            click.echo(f"Email: {user.get('email')}")
-
-            # Print deployments
-            deployments = result.get("deployments", [])
-            click.echo("\n" + click.style("Deployments:", fg="blue", bold=True))
-
-            if not deployments:
-                click.echo("No active deployments found.")
-            else:
-                for deployment in deployments:
-                    status_color = "green" if deployment.get("isActive") else "yellow"
-                    click.echo(
-                        "\n"
-                        + click.style(
-                            f"Deployment ID: {deployment.get('id')}", bold=True
-                        )
-                    )
-                    click.echo(f"App ID: {deployment.get('appId')}")
-                    click.echo(
-                        click.style(
-                            f"Status: {deployment.get('status')}", fg=status_color
-                        )
-                    )
-                    click.echo(f"Created: {deployment.get('createdAt')}")
-                    click.echo(f"Last Updated: {deployment.get('updatedAt')}")
-                    click.echo(
-                        click.style(
-                            f"Active: {deployment.get('isActive')}", fg=status_color
-                        )
-                    )
-
-            # Print meta info
-            meta = result.get("meta", {})
-            click.echo("\n" + click.style("Meta Information:", fg="blue", bold=True))
-            click.echo(f"Total Deployments: {meta.get('total')}")
-            click.echo(f"Last Updated: {meta.get('timestamp')}")
-
-        except Exception as e:
-            click.echo(click.style(f"❌ {e!s}", fg="red"))
-            sys.exit(1)
-    except Exception as e:
-        click.echo(click.style(f"Error showing deployments: {e} ❌", fg="red"))
-        sys.exit(1)
-
-
 @cli.command()
 @click.pass_context
 def tutorial(ctx):
@@ -463,8 +333,6 @@ def tutorial(ctx):
 
     This command runs the tutorial app located in the package's tutorial directory.
     """
-    import contextlib
-
     import preswald
 
     package_dir = os.path.dirname(preswald.__file__)
@@ -480,10 +348,16 @@ def tutorial(ctx):
 
     click.echo("🚀 Launching the Preswald tutorial app! 🎉")
 
-    # Use context manager to temporarily change directory
-    with contextlib.chdir(tutorial_dir):
+    # Save current directory
+    current_dir = os.getcwd()
+    try:
+        # Change to tutorial directory
+        os.chdir(tutorial_dir)
         # Invoke the 'run' command from the tutorial directory
         ctx.invoke(run, port=8501)
+    finally:
+        # Change back to original directory
+        os.chdir(current_dir)
 
 
 if __name__ == "__main__":

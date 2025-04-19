@@ -5,12 +5,13 @@ from preswald import (
     Workflow,
     WorkflowAnalyzer,
     alert,
+    big_number,
     button,
     chat,
     checkbox,
-    connect,
     get_df,
     image,
+    json_viewer,
     matplotlib,
     playground,
     plotly,
@@ -71,7 +72,6 @@ def load_data():
     text("## 2. Viewing Data with `table()`")
     text("Let's load a sample dataset and display it using the `table()` component.")
 
-    connect()
     df = get_df("sample_csv")
     table(df, limit=10)  # Display first 10 rows
 
@@ -259,7 +259,6 @@ The `workflow_dag()` function renders a Directed Acyclic Graph (DAG) to visualiz
 
     @demo_workflow.atom()
     def demo_load_data():
-        connect()
         return get_df("sample_csv")
 
     @demo_workflow.atom(dependencies=["demo_load_data"])
@@ -285,7 +284,6 @@ from preswald import workflow_dag, Workflow
 workflow = Workflow()
 @workflow.atom()
 def load_data():
-    connect()
     return get_df("sample_csv")
 @workflow.atom(dependencies=['load_data'])
 def clean_data(load_data):
@@ -530,6 +528,88 @@ def text_input_demo():
     # Show a greeting if they've entered a name
     if name:
         text(f"👋 Hello, {name}!")
+
+
+# --- JSON VIEWER COMPONENT ---
+@workflow.atom()
+def json_viewer_demo():
+    text("## 21. Exploring Structured Data with `json_viewer()`")
+    text(
+        "Use the `json_viewer()` component to visualize deeply nested JSON objects interactively."
+    )
+
+    sample_json = {
+        "user": {
+            "id": 123,
+            "name": "Alice",
+            "isActive": True,
+            "email": "alice@example.com",
+            "roles": ["admin", "editor"],
+            "profile": {
+                "age": 30,
+                "address": {
+                    "street": "123 Main St",
+                    "city": "Wonderland",
+                    "zip": "12345",
+                },
+            },
+        },
+        "stats": {"posts": 34, "followers": 1200, "following": 150},
+        "createdAt": "2025-04-09T12:00:00Z",
+        "metadata": None,
+    }
+
+    json_viewer(sample_json, title="Sample User Data", expanded=True)
+
+
+# --- BIG NUMBER METRIC CARDS COMPONENT ---
+@workflow.atom()
+def big_number_demo():
+    text("## 22. Highlighting Key Metrics with `big_number()`")
+    text(
+        """The `big_number()` component lets you visually emphasize important single-value KPIs like active users, usage trends, or totals. It supports delta indicators, icons, automatic number formatting (e.g., 1.2M), and stacking layout.**Example Use Cases:**
+- Total Users
+- Active Sessions
+- System Resources"""
+    )
+
+    # Display metric cards
+    big_number(
+        value=15602,
+        label="Active Users",
+        delta="+5.4%",
+        delta_color="green",
+        icon="user",
+        description="Since last week",
+        size=0.2,
+    )
+    big_number(
+        value=480602,
+        label="Active Resources",
+        delta="+5.4%",
+        delta_color="green",
+        icon="server",
+        description="Since last week",
+        size=0.2,
+    )
+    big_number(
+        value=156020000,
+        label="Total Users",
+        delta="+5.4%",
+        delta_color="green",
+        icon="users",
+        description="Since last week",
+        size=0.2,
+    )
+    big_number(
+        value=9965088,
+        label="Total Resources",
+        delta="-5.7%",
+        delta_color="red",
+        icon="database",
+        description="Since last week",
+        size=0.2,
+    )
 
 
 # --- FINAL MESSAGE ---
