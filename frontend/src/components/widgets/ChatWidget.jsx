@@ -25,13 +25,13 @@ const ChatWidget = ({
   const chatContainerRef = useRef(null);
 
   // Load API key from secrets.toml if present
-  if (apiKey) {
+  if (apiKey && apiKey != '') {
     sessionStorage.setItem('openai_api_key', apiKey.trim());
   }
 
   const [inputValue, setInputValue] = useState('');
   const [showSettings, setShowSettings] = useState(false);
-  // const [apiKey, setApiKey] = useState('');
+  const [defaultApiKey, setApiKey] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const hasApiKey = useMemo(() => !!sessionStorage.getItem('openai_api_key'), []);
@@ -171,8 +171,8 @@ const ChatWidget = ({
   // Add this function to handle API key submission
   const handleApiKeySubmit = (e) => {
     e.preventDefault();
-    if (apiKey.trim()) {
-      sessionStorage.setItem('openai_api_key', apiKey.trim());
+    if (defaultApiKey.trim()) {
+      sessionStorage.setItem('openai_api_key', defaultApiKey.trim());
       setShowSettings(false);
       window.location.reload(); // Refresh to update hasApiKey state
     }
@@ -216,7 +216,7 @@ const ChatWidget = ({
                 <h3 className="text-sm font-medium">OpenAI API Key</h3>
                 <Input
                   type="password"
-                  value={apiKey}
+                  value={defaultApiKey}
                   onChange={(e) => setApiKey(e.target.value)}
                   placeholder="sk-..."
                   className="flex-1 transition-colors text-sm h-8"
@@ -226,7 +226,7 @@ const ChatWidget = ({
                 </p>
               </div>
               <div className="flex justify-end">
-                <Button type="submit" disabled={!apiKey.trim()} size="sm" className="h-8">
+                <Button type="submit" disabled={!defaultApiKey.trim()} size="sm" className="h-8">
                   Save Key
                 </Button>
               </div>
