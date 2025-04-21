@@ -43,8 +43,28 @@ const App = () => {
 
   useEffect(() => {
     fetch('/api/config')
-      .then((res) => res.json())
-      .then((config) => setDebugMode(config?.debug || false))
+      .then((res) => res.text()) // 👈 read as text, NOT JSON
+      .then((htmlText) => {
+        // Create a fake DOM element to parse it
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(htmlText, 'text/html');
+
+        // Find the script tag that defines window.PRESWALD_BRANDING
+        const scripts = Array.from(doc.scripts);
+
+        for (let script of scripts) {
+          if (script.textContent.includes('window.PRESWALD_BRANDING')) {
+            const match = script.textContent.match(/window\.PRESWALD_BRANDING\s*=\s*(\{.*\});/s);
+            if (match && match[1]) {
+              const brandingConfig = JSON.parse(match[1]);
+              setDebugMode(brandingConfig?.debug || false);
+              return;
+            }
+          }
+        }
+
+        throw new Error('PRESWALD_BRANDING not found');
+      })
       .catch((err) => console.error('Error fetching config:', err));
   }, []);
 
