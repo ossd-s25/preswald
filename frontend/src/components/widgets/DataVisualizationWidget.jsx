@@ -1,3 +1,5 @@
+import Plotly from 'plotly.js-dist';
+
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import Plot from 'react-plotly.js';
@@ -24,7 +26,12 @@ const DataVisualizationWidget = ({ id, data: rawData, content, error, className 
   const [plotError, setPlotError] = useState(null);
   const [processedData, setProcessedData] = useState(null);
   const plotContainerRef = useRef(null);
+  const plotRef = useRef(null); // Added useRef for Plotly div
   const [loadedDataPercentage, setLoadedDataPercentage] = useState(0);
+
+  useEffect(() => {
+    window.Plotly = Plotly;
+  }, []);
 
   const { ref: inViewRef, inView } = useInView({
     threshold: 0.1,
@@ -158,6 +165,19 @@ const DataVisualizationWidget = ({ id, data: rawData, content, error, className 
     return () => window.removeEventListener('resize', debouncedResize);
   }, [debouncedResize]);
 
+  const handleDownload = () => {
+    // Added download function
+    if (plotRef.current) {
+      window.Plotly.downloadImage(plotRef.current, {
+        format: 'png',
+        filename: 'plotly-graph',
+        height: 600,
+        width: 800,
+        scale: 2,
+      });
+    }
+  };
+
   if (error || plotError) {
     return (
       <Alert variant="destructive">
@@ -183,6 +203,7 @@ const DataVisualizationWidget = ({ id, data: rawData, content, error, className 
             )}
             <Plot
               key={id}
+              ref={plotRef} // Assigned ref to Plot component
               data={processedData.data}
               layout={{
                 ...processedData.layout,
@@ -216,6 +237,27 @@ const DataVisualizationWidget = ({ id, data: rawData, content, error, className 
                 setPlotError('Failed to render plot');
               }}
             />
+            <div
+              className="plotly-download-container"
+              style={{ textAlign: 'right', marginTop: '10px' }}
+            >
+              {' '}
+              {/* Download button container */}
+              <button
+                onClick={handleDownload}
+                className="plotly-download-button"
+                style={{
+                  padding: '6px 12px',
+                  backgroundColor: '#1e293b',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                }}
+              >
+                Download PNG
+              </button>
+            </div>
           </div>
         ) : (
           <div className="plotly-plot" ref={plotContainerRef} />
