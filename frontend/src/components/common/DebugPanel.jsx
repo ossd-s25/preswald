@@ -4,24 +4,22 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
+import { comm } from '@/utils/websocket';
+
 const DebugPanel = () => {
-  const [visible, setVisible] = useState(true);
-  const [state, setState] = useState({});
+  const [visible, setVisible] = useState(false);
+  const [debugState, setDebugState] = useState({});
 
   useEffect(() => {
-    const handleDebugMessage = (event) => {
-      const msg = JSON.parse(event.data);
-      if (msg.channel === '__debug__') {
-        setState(msg.payload);
-      }
-    };
+    const unsubscribe = comm.subscribe((payload) => {
+      console.log('[DebugPanel] Received debug state:', payload);
+      setDebugState(payload);
+    });
 
-    const socket = new WebSocket('ws://localhost:8000/ws');
-    socket.addEventListener('message', handleDebugMessage);
+    comm.connect();
 
     return () => {
-      socket.removeEventListener('message', handleDebugMessage);
-      socket.close();
+      unsubscribe();
     };
   }, []);
 
@@ -33,7 +31,7 @@ const DebugPanel = () => {
       {visible && (
         <Card className="w-[400px] h-[500px] overflow-hidden shadow-lg border bg-white dark:bg-gray-900 text-sm">
           <ScrollArea className="p-4 h-full">
-            <pre className="whitespace-pre-wrap">{JSON.stringify(state, null, 2)}</pre>
+            <pre className="whitespace-pre-wrap">{JSON.stringify(debugState, null, 2)}</pre>
           </ScrollArea>
         </Card>
       )}

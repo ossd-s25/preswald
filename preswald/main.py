@@ -90,6 +90,7 @@ def _register_websocket_routes(app: FastAPI):
     async def websocket_endpoint(websocket: WebSocket, client_id: str):
         """Handle WebSocket connections"""
         try:
+            await app.state.service._broadcast_debug_state()
             await app.state.service.register_client(client_id, websocket)
             try:
                 while not app.state.service._is_shutting_down:

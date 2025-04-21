@@ -80,8 +80,8 @@ class BasePreswaldService:
     def get_state_snapshot(cls):
         """Get all info about current state of instance for debug panel"""
         return {
-            "components": "FJDASKSLFJDSAKLFJADSKL",
-            "execution_graph": "FJDKLFJDSAKLFJDASKL",
+            "components": cls.get_instance().get_rendered_components,
+            "execution_graph": cls.get_instance().get_workflow(),
         }
 
     @property
