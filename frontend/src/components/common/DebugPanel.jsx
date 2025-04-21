@@ -25,6 +25,15 @@ const DebugPanel = () => {
     };
   }, []);
 
+  const [openSections, setOpenSections] = useState({});
+
+  const toggleSection = (key) => {
+    setOpenSections((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+  };
+
   return (
     <div className="fixed bottom-4 right-4 z-50">
       <Button onClick={() => setVisible(!visible)} className="mb-2">
@@ -33,7 +42,21 @@ const DebugPanel = () => {
       {visible && (
         <Card className="w-[400px] h-[500px] overflow-hidden shadow-lg border bg-white dark:bg-gray-900 text-sm">
           <ScrollArea className="p-4 h-full">
-            <pre className="whitespace-pre-wrap">{JSON.stringify(debugState, null, 2)}</pre>
+            {Object.entries(debugState).map(([key, value]) => (
+              <div key={key} className="mb-2">
+                <Button
+                  onClick={() => toggleSection(key)}
+                  className="w-full text-left font-semibold py-1 hover:underline"
+                >
+                  {openSections[key] ? '▾' : '▸'} {key}
+                </Button>
+                {openSections[key] && (
+                  <pre className="ml-4 whitespace-pre-wrap text-xs">
+                    {JSON.stringify(value, null, 2)}
+                  </pre>
+                )}
+              </div>
+            ))}
           </ScrollArea>
         </Card>
       )}
