@@ -171,6 +171,7 @@ const DataVisualizationWidget = ({ id, data: rawData, content, error, className 
     if (plotlyDiv) {
       const title = processedData?.layout?.title?.text || 'my-graph';
       window.Plotly.downloadImage(plotlyDiv, {
+        scale: 3,
         format: 'png',
         filename: title.replace(/\s+/g, '-').toLowerCase(),
       });
