@@ -44,7 +44,7 @@ const App = () => {
   useEffect(() => {
     fetch('/api/config')
       .then((res) => res.json())
-      .then((config) => setDebugMode(config.debug || false))
+      .then((config) => setDebugMode(config?.debug || false))
       .catch((err) => console.error('Error fetching config:', err));
   }, []);
 
@@ -68,6 +68,7 @@ const App = () => {
 
       case 'config':
         setConfig(message.config);
+        setDebugMode(message.config?.debug || false);
         break;
 
       case 'initial_state':

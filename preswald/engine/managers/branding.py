@@ -28,7 +28,7 @@ class BrandingManager:
             "logo": "/images/logo.png",
             "favicon": f"/images/favicon.ico?timestamp={time.time()}",
             "primaryColor": "#000000",
-            "debug": False,  # Default value for debug flag
+            "debug": False,
         }
 
         if script_path:
