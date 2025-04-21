@@ -2,9 +2,9 @@ import logging
 import os
 import time
 from collections.abc import Callable
-from threading import Lock
-from typing import Any, Callable, Dict, Optional
 from contextlib import contextmanager
+from threading import Lock
+from typing import Any
 
 from preswald.engine.runner import ScriptRunner
 from preswald.engine.utils import (
@@ -13,7 +13,8 @@ from preswald.engine.utils import (
     compress_data,
     optimize_plotly_data,
 )
-from preswald.interfaces.workflow import Workflow, Atom
+from preswald.interfaces.workflow import Atom, Workflow
+
 from .managers.data import DataManager
 from .managers.layout import LayoutManager
 
@@ -43,7 +44,7 @@ class BasePreswaldService:
 
         # DAG workflow engine
         self._workflow = Workflow()
-        self._current_atom: Optional[str] = None
+        self._current_atom: str | None = None
 
         # Initialize session tracking
         self.script_runners: dict[str, ScriptRunner] = {}
@@ -74,6 +75,14 @@ class BasePreswaldService:
                 cls._instance._script_path = script_path
                 cls._instance._initialize_data_manager(script_path)
         return cls._instance
+
+    @classmethod
+    def get_state_snapshot(cls):
+        """Get all info about current state of instance for debug panel"""
+        return {
+            "components": "FJDASKSLFJDSAKLFJADSKL",
+            "execution_graph": "FJDKLFJDSAKLFJDASKL",
+        }
 
     @property
     def script_path(self) -> str | None:
@@ -117,10 +126,14 @@ class BasePreswaldService:
                                     )
                         with self.active_atom(component_id):
                             if component_id not in self._workflow.atoms:
-                                self._workflow.atoms[component_id] = Atom(name=component_id, func=lambda: None)
+                                self._workflow.atoms[component_id] = Atom(
+                                    name=component_id, func=lambda: None
+                                )
                             self._layout_manager.add_component(cleaned_component)
                             if logger.isEnabledFor(logging.DEBUG):
-                                logger.debug(f"Added component with state: {cleaned_component}")
+                                logger.debug(
+                                    f"Added component with state: {cleaned_component}"
+                                )
                 else:
                     # Components without IDs are added as-is
                     self._layout_manager.add_component(cleaned_component)
@@ -167,7 +180,9 @@ class BasePreswaldService:
             if self._current_atom:
                 logger.debug(f"[DAG] {self._current_atom} depends on {component_id}")
                 if self._current_atom not in self._workflow.atoms:
-                    self._workflow.atoms[self._current_atom] = Atom(name=self._current_atom, func=lambda: None)
+                    self._workflow.atoms[self._current_atom] = Atom(
+                        name=self._current_atom, func=lambda: None
+                    )
                 self._workflow.atoms[self._current_atom].dependencies.add(component_id)
 
             return value
@@ -180,7 +195,7 @@ class BasePreswaldService:
     def get_workflow(self) -> Workflow:
         return self._workflow
 
-    async def handle_client_message(self, client_id: str, message: Dict[str, Any]):
+    async def handle_client_message(self, client_id: str, message: dict[str, Any]):
         """Process incoming messages from clients"""
         start_time = time.time()
         try:

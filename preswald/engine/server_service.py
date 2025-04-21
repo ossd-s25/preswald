@@ -85,11 +85,9 @@ class ServerPreswaldService(BasePreswaldService):
 
     async def _broadcast_debug_state(self):
         """Broadcast debug state snapshots to all clients"""
-        if not self.debug_mode:
-            return
-
         try:
             state_snapshot = self.get_state_snapshot()
+            logger.critical(state_snapshot)
             for websocket in self.websocket_connections.values():
                 await websocket.send_json(
                     {
