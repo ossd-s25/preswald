@@ -88,9 +88,6 @@ class ServerPreswaldService(BasePreswaldService):
         try:
             state_snapshot = self.get_state_snapshot()
 
-            # Log the state snapshot as critical
-            logger.critical(f"[Debug] State snapshot: {state_snapshot}")
-
             # Broadcast the state snapshot to all connected WebSocket clients
             for websocket in self.websocket_connections.values():
                 await websocket.send_json(
@@ -99,6 +96,8 @@ class ServerPreswaldService(BasePreswaldService):
                         "payload": state_snapshot,
                     }
                 )
-            logger.info("[Debug] Debug state broadcasted to all clients")
+            logger.info(
+                f"[Debug] Debug state {state_snapshot} broadcasted to all clients"
+            )
         except Exception as e:
             logger.error(f"Error broadcasting debug state: {e}")
