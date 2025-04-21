@@ -95,6 +95,7 @@ class BasePreswaldService:
                         components_cleaned.append(
                             {
                                 "id": component_id,
+                                "type": component.get("type"),
                                 "state": cls.get_instance()._component_states.get(
                                     component_id
                                 ),
