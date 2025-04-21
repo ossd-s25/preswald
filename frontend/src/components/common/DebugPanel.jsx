@@ -12,8 +12,11 @@ const DebugPanel = () => {
 
   useEffect(() => {
     const unsubscribe = comm.subscribe((payload) => {
-      console.log('[DebugPanel] Received debug state:', payload);
-      setDebugState(payload);
+      if (payload.type === '__debug__') {
+        // Only process messages with type "__debug__"
+        console.log('[DebugPanel] Received debug state:', payload);
+        setDebugState(payload.payload); // Use the "payload" field for the debug state
+      }
     });
 
     comm.connect();

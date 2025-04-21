@@ -78,8 +78,44 @@ class BasePreswaldService:
 
     @classmethod
     def get_state_snapshot(cls):
-        """Get all info about current state of instance for debug panel"""
-        return {"components": "TEST"}
+        """Get all info about the current state of the instance for the debug panel."""
+        try:
+            instance = cls.get_instance()
+
+            # Get components hierarchy
+            components = instance.get_rendered_components()
+            components_cleaned = []
+            rows = components.get("rows", [])
+            for row in rows:
+                for component in row:
+                    component_id = component.get("id")
+                    if not component_id:
+                        continue
+                    else:
+                        components_cleaned.append(
+                            {
+                                "id": component_id,
+                                "state": cls.get_instance()._component_states.get(
+                                    component_id
+                                ),
+                            }
+                        )
+            # Get tracked variables
+            variables = (
+                instance._workflow.context.variables if instance._workflow else {}
+            )
+
+            # Get errors
+            errors = instance.error_log if hasattr(instance, "error_log") else []
+
+            return {
+                "components": components_cleaned,
+                "variables": variables,
+                "errors": errors,
+            }
+        except Exception as e:
+            logger.error(f"Error generating state snapshot: {e}", exc_info=True)
+            return {"components": {}, "variables": {}, "errors": [{"message": str(e)}]}
 
     @property
     def script_path(self) -> str | None:
