@@ -43,13 +43,12 @@ const App = () => {
 
   useEffect(() => {
     fetch('/api/config')
-      .then((res) => res.text()) // 👈 read as text, NOT JSON
+      .then((res) => res.text())
       .then((htmlText) => {
-        // Create a fake DOM element to parse it
+        //parse html text for debug flag
         const parser = new DOMParser();
         const doc = parser.parseFromString(htmlText, 'text/html');
 
-        // Find the script tag that defines window.PRESWALD_BRANDING
         const scripts = Array.from(doc.scripts);
 
         for (let script of scripts) {
