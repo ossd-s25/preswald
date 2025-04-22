@@ -166,13 +166,13 @@ const DataVisualizationWidget = ({ id, data: rawData, content, error, className 
     return () => window.removeEventListener('resize', debouncedResize);
   }, [debouncedResize]);
 
-  const handleDownload = () => {
+  const handleDownload = (format = 'png') => {
     const plotlyDiv = plotWrapperRef.current?.querySelector('.js-plotly-plot');
     if (plotlyDiv) {
       const title = processedData?.layout?.title?.text || 'my-graph';
       window.Plotly.downloadImage(plotlyDiv, {
         scale: 3,
-        format: 'png',
+        format,
         filename: title.replace(/\s+/g, '-').toLowerCase(),
       });
     }
@@ -255,14 +255,19 @@ const DataVisualizationWidget = ({ id, data: rawData, content, error, className 
                 }}
               />
             </div>
-            <Button
-              onClick={handleDownload}
-              variant="secondary"
-              size="sm"
-              className="plotly-download-button"
-            >
-              Download PNG
-            </Button>
+            <div className="plotly-download-button">
+              <Button
+                onClick={() => handleDownload('png')}
+                variant="secondary"
+                size="sm"
+                className="mr-2"
+              >
+                Download PNG
+              </Button>
+              <Button onClick={() => handleDownload('jpeg')} variant="secondary" size="sm">
+                Download JPEG
+              </Button>
+            </div>
           </div>
         ) : (
           <div className="plotly-plot" ref={plotContainerRef} />
