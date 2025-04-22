@@ -29,6 +29,7 @@ const DataVisualizationWidget = ({ id, data: rawData, content, error, className 
   const plotContainerRef = useRef(null);
   const plotWrapperRef = useRef(null);
   const [loadedDataPercentage, setLoadedDataPercentage] = useState(0);
+  const [showDropdown, setShowDropdown] = useState(false);
 
   useEffect(() => {
     window.Plotly = Plotly;
@@ -176,6 +177,7 @@ const DataVisualizationWidget = ({ id, data: rawData, content, error, className 
         filename: title.replace(/\s+/g, '-').toLowerCase(),
       });
     }
+    setShowDropdown(false);
   };
 
   if (error || plotError) {
@@ -204,6 +206,26 @@ const DataVisualizationWidget = ({ id, data: rawData, content, error, className 
 
           .plotly-plot-container:hover .plotly-download-button {
             opacity: 1;
+          }
+            
+          .download-dropdown {
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 0.25rem;
+            position: absolute;
+            right: 0;
+            margin-top: 0.5rem;
+            z-index: 10;
+          }
+
+          .download-option {
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            white-space: nowrap;
+          }
+
+          .download-option:hover {
+            background-color: #f0f0f0;
           }
         `}</style>
         {!inView || isLoading ? (
@@ -256,17 +278,28 @@ const DataVisualizationWidget = ({ id, data: rawData, content, error, className 
               />
             </div>
             <div className="plotly-download-button">
-              <Button
-                onClick={() => handleDownload('png')}
-                variant="secondary"
-                size="sm"
-                className="mr-2"
-              >
-                Download PNG
-              </Button>
-              <Button onClick={() => handleDownload('jpeg')} variant="secondary" size="sm">
-                Download JPEG
-              </Button>
+              <div style={{ position: 'relative' }}>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setShowDropdown((prev) => !prev)}
+                >
+                  Download
+                </Button>
+                {showDropdown && (
+                  <div className="download-dropdown">
+                    {['png', 'jpeg', 'webp', 'svg', 'full-json'].map((format) => (
+                      <div
+                        key={format}
+                        className="download-option"
+                        onClick={() => handleDownload(format)}
+                      >
+                        {format.toUpperCase()}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         ) : (
