@@ -191,43 +191,6 @@ const DataVisualizationWidget = ({ id, data: rawData, content, error, className 
   return (
     <Card className={cn('plotly-container', className)} ref={setRefs}>
       <CardContent className="plotly-card-content">
-        <style>{`
-          .plotly-plot-container {
-            position: relative;
-          }
-
-          .plotly-download-button {
-            position: absolute;
-            top: 0.5rem;
-            right: 0.5rem;
-            opacity: 0;
-            transition: opacity 0.2s ease-in-out;
-          }
-
-          .plotly-plot-container:hover .plotly-download-button {
-            opacity: 1;
-          }
-            
-          .download-dropdown {
-            background: white;
-            border: 1px solid #ccc;
-            border-radius: 0.25rem;
-            position: absolute;
-            right: 0;
-            margin-top: 0.5rem;
-            z-index: 10;
-          }
-
-          .download-option {
-            padding: 0.5rem 1rem;
-            cursor: pointer;
-            white-space: nowrap;
-          }
-
-          .download-option:hover {
-            background-color: #f0f0f0;
-          }
-        `}</style>
         {!inView || isLoading ? (
           <div className="plotly-loading-container">
             <div className="plotly-loading-spinner"></div>
