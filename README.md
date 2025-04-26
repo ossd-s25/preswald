@@ -66,9 +66,9 @@ First, install Preswald using pip. https://pypi.org/project/preswald/
 
 ```bash
 pip install preswald
-
+```
 or 
-
+```bash
 uv pip install preswald
 ```
 
