@@ -56,12 +56,13 @@ We recommend using Conda to manage dependencies:
 3. Install dependencies:
    ```bash
    pip install -e ".[dev]"
-
-   or
-
-   uv pip install -e ".[dev]" # if you installed uv
    ```
-4. Set up pre-commit hooks:
+   or, if you installed uv
+   
+   ```bash
+   uv pip install -e ".[dev]" 
+   ```
+5. Set up pre-commit hooks:
    ```
    pre-commit install
    ```
