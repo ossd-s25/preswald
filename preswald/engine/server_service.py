@@ -96,8 +96,6 @@ class ServerPreswaldService(BasePreswaldService):
                         "payload": state_snapshot,
                     }
                 )
-            logger.info(
-                f"[Debug] Debug state {state_snapshot} broadcasted to all clients"
-            )
+            logger.info("[Debug] Debug state broadcasted to all clients")
         except Exception as e:
             logger.error(f"Error broadcasting debug state: {e}")

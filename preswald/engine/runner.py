@@ -47,8 +47,12 @@ class ScriptRunner:
         self._run_count = 0
         self._lock = threading.Lock()
         self._script_globals = {}
+        self._script_locals = {}
 
-        from .service import PreswaldService # deferred import to avoid cyclic dependency
+        from .service import (
+            PreswaldService,
+        )  # deferred import to avoid cyclic dependency
+
         self._service = PreswaldService.get_instance()
 
         logger.info(f"[ScriptRunner] Initialized with session_id: {session_id}")
@@ -245,7 +249,7 @@ class ScriptRunner:
                     os.chdir(script_dir)
                     code = compile(f.read(), self.script_path, "exec")
                     logger.debug("[ScriptRunner] Script compiled")
-                    exec(code, self._script_globals)
+                    exec(code, self._script_globals, self._script_locals)
                     logger.debug("[ScriptRunner] Script executed")
                     # Change back to original working dir
                     os.chdir(current_working_dir)

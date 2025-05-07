@@ -1,6 +1,7 @@
 import logging
 import os
 import time
+import types
 from collections.abc import Callable
 from contextlib import contextmanager
 from threading import Lock
@@ -77,6 +78,19 @@ class BasePreswaldService:
         return cls._instance
 
     @classmethod
+    def get_tracked_variables(cls):
+        """Aggregate variables from all active ScriptRunner instances."""
+        tracked_variables = []
+        for runner in cls.get_instance().script_runners.values():
+            local_vars = runner._script_locals
+            for key, value in local_vars.items():
+                if not isinstance(value, types.ModuleType) and not isinstance(
+                    value, types.FunctionType
+                ):
+                    tracked_variables.append({"name": key, "value": str(value)})
+        return tracked_variables
+
+    @classmethod
     def get_state_snapshot(cls):
         """Get all info about the current state of the instance for the debug panel."""
         try:
@@ -101,10 +115,14 @@ class BasePreswaldService:
                                 ),
                             }
                         )
+
             # Get tracked variables
-            variables = (
-                instance._workflow.context.variables if instance._workflow else {}
-            )
+            workflow_variables = [
+                instance._workflow.context.variables if instance._workflow else None
+            ]
+
+            script_variables = instance.get_tracked_variables()
+            variables = script_variables + workflow_variables
 
             # Get errors
             errors = instance.error_log if hasattr(instance, "error_log") else []
