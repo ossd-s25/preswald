@@ -5,13 +5,9 @@ import os
 import random
 import re
 import sys
-from functools import wraps
 from pathlib import Path
 
 import toml
-
-from preswald.engine.service import PreswaldService
-from preswald.interfaces.component_return import ComponentReturn
 
 
 # Configure logging
@@ -19,6 +15,31 @@ logger = logging.getLogger(__name__)
 
 IS_PYODIDE = "pyodide" in sys.modules
 
+def read_disable_reactivity(config_path: str) -> bool:
+    """
+    Read the --disable-reactivity flag from the TOML config.
+
+    Args:
+        config_path: Path to preswald.toml
+
+    Returns:
+        bool: True if reactivity should be disabled
+    """
+    try:
+        if os.path.exists(config_path):
+            config = toml.load(config_path)
+            return bool(config.get("project", {}).get("disable_reactivity", False))
+    except Exception as e:
+        logger.warning(f"Could not load disable_reactivity from {config_path}: {e}")
+    return False
+
+def reactivity_explicitly_disabled(config_path: str = "preswald.toml") -> bool:
+    """Check if reactivity is disabled in project configuration."""
+    try:
+        return read_disable_reactivity(config_path)
+    except Exception as e:
+        logger.warning(f"[is_app_reactivity_disabled] Failed to read config: {e}")
+        return False
 
 def read_template(template_name, template_id=None):
     """Read a template file from the package.
@@ -146,131 +167,104 @@ def generate_slug(base_name: str) -> str:
     return slug
 
 
-def generate_stable_id(prefix: str = "component", identifier: str | None = None) -> str:
+def generate_stable_id(
+    prefix: str = "component",
+    identifier: str | None = None,
+    callsite_hint: str | None = None,
+) -> str:
     """
-    Generate a stable, deterministic component ID using either:
+    Generate a stable, deterministic component ID using:
     - a user-supplied identifier string, or
     - the source code callsite (file path and line number).
 
-    Useful for preserving component identity across script reruns,
-    supporting diff-based rerendering and caching.
-
     Args:
-        prefix (str): A prefix for the component type (e.g., "text", "slider").
-        identifier (Optional[str]): Optional string to override callsite-based ID generation.
-                                    Useful when rendering multiple components from the same line
-                                    or loop (e.g., in a list comprehension or for-loop).
+        prefix (str): Prefix for the component type (e.g., "text", "slider").
+        identifier (Optional[str]): Overrides callsite-based ID generation.
+        callsite_hint (Optional[str]): Explicit callsite (e.g., "file.py:42") for deterministic hashing.
 
     Returns:
-        str: A stable ID like "text-abc123ef"
+        str: A stable component ID like "text-abc123ef".
     """
-
-    preswald_src_dir = os.path.abspath(os.path.join(__file__, ".."))
-
-    def get_callsite_id():
-        frame = inspect.currentframe()
-        try:
-            while frame:
-                info = inspect.getframeinfo(frame)
-                filepath = os.path.abspath(info.filename)
-
-                in_preswald_src = filepath.startswith(preswald_src_dir)
-                in_venv = ".venv" in filepath or "site-packages" in filepath
-
-                # Skip stdlib check entirely if we're in pyodide
-                in_stdlib = (
-                    False if IS_PYODIDE else filepath.startswith(sys.base_prefix)
-                )
-
-                if not (in_preswald_src or in_venv or in_stdlib):
-                    logger.debug(
-                        f"[generate_stable_id] Found user code: {filepath}:{info.lineno}"
-                    )
-                    return f"{filepath}:{info.lineno}"
-
-                logger.debug(
-                    f"[generate_stable_id] in_preswald_src: {in_preswald_src}, in_venv: {in_venv}, in_stdlib: {in_stdlib}"
-                )
-
-                frame = frame.f_back
-
-            return "unknown:0"
-        finally:
-            del frame
-
     if identifier:
         hashed = hashlib.md5(identifier.lower().encode()).hexdigest()[:8]
-    else:
-        callsite = get_callsite_id()
-        hashed = hashlib.md5(callsite.encode()).hexdigest()[:8]
+        logger.debug(f"[generate_stable_id] Using provided identifier to generate hash {hashed=}")
+        return f"{prefix}-{hashed}"
 
+    fallback_callsite = "unknown:0"
+
+    if callsite_hint:
+        if ":" in callsite_hint:
+            filename, lineno = callsite_hint.rsplit(":", 1)
+            try:
+                int(lineno)  # Validate it's a number
+                callsite_hint = f"{filename}:{lineno}"
+            except ValueError:
+                logger.warning(f"[generate_stable_id] Invalid line number in callsite_hint {callsite_hint=}")
+                callsite_hint = None
+        else:
+            logger.warning(f"[generate_stable_id] Invalid callsite_hint format (missing colon) {callsite_hint=}")
+            callsite_hint = None
+
+    if not callsite_hint:
+        preswald_src_dir = os.path.abspath(os.path.join(__file__, ".."))
+
+        def get_callsite_id():
+            frame = inspect.currentframe()
+            try:
+                while frame:
+                    info = inspect.getframeinfo(frame)
+                    filepath = os.path.abspath(info.filename)
+
+                    if IS_PYODIDE:
+                        # In Pyodide: skip anything in /lib/, allow /main.py etc.
+                        if not filepath.startswith("/lib/"):
+                            logger.debug(f"[generate_stable_id] [Pyodide] Found user code: {filepath}:{info.lineno}")
+                            return f"{filepath}:{info.lineno}"
+                    else:
+                        # In native: skip stdlib, site-packages, and preswald internals
+                        in_preswald_src = filepath.startswith(preswald_src_dir)
+                        in_venv = ".venv" in filepath or "site-packages" in filepath
+                        in_stdlib = filepath.startswith(sys.base_prefix)
+
+                        if not (in_preswald_src or in_venv or in_stdlib):
+                            logger.debug(f"[generate_stable_id] Found user code: {filepath}:{info.lineno}")
+                            return f"{filepath}:{info.lineno}"
+
+                    frame = frame.f_back
+
+                logger.warning("[generate_stable_id] No valid callsite found, falling back to default")
+                return fallback_callsite
+            finally:
+                del frame
+
+        callsite_hint = get_callsite_id()
+
+    hashed = hashlib.md5(callsite_hint.encode()).hexdigest()[:8]
+    logger.debug(f"[generate_stable_id] Using final callsite_hint to generate hash {hashed=} {callsite_hint=}")
     return f"{prefix}-{hashed}"
 
 
-def with_render_tracking(component_type: str):
+def generate_stable_atom_name_from_component_id(component_id: str, prefix: str = "_auto_atom") -> str:
     """
-    Decorator for Preswald components that automates:
-    - stable ID generation via callsite hashing
-    - render-diffing using `service.should_render(...)`
-    - conditional appending via `service.append_component(...)`
+    Convert a stable component ID into a corresponding atom name.
+    Normalizes the suffix and replaces hyphens with underscores.
 
-    It supports both wrapped (`ComponentReturn`) and raw-dict returns.
+    Example:
+        component_id='text-abc123ef' → '_auto_atom_abc123ef'
 
     Args:
-        component_type (str): The type of the component (e.g. "text", "plot", "slider").
-
-    Usage:
-        @with_render_tracking("text")
-        def text(...): ...
+        component_id (str): A previously generated component ID.
+        prefix (str): Optional prefix for the atom name.
 
     Returns:
-        A wrapped function that performs ID assignment and render tracking.
+        str: A deterministic, underscore-safe atom name.
     """
+    if component_id and "-" in component_id:
+        hash_part = component_id.rsplit("-", 1)[-1]
+        return f"{prefix}_{hash_part}"
 
-    def decorator(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            service = PreswaldService.get_instance()
-
-            # only generate ID if not explicitly passed
-            component_id = kwargs.get("component_id") or generate_stable_id(
-                component_type
-            )
-            kwargs["component_id"] = component_id
-
-            result = func(*args, **kwargs)
-
-            # extract the component dict
-            if isinstance(result, dict) and "id" in result:
-                component = result
-                return_value = result
-            else:
-                component = getattr(result, "_preswald_component", None)
-                if not component:
-                    logger.warning(
-                        f"[{component_type}] No component metadata found for tracking."
-                    )
-                    return result
-                return_value = (
-                    result.value if isinstance(result, ComponentReturn) else result
-                )
-
-            component["shouldRender"] = service.should_render(component_id, component)
-
-            with service.active_atom(service._workflow._current_atom):
-                if service.should_render(component_id, component):
-                    logger.debug(f"[{component_type}] Created component: {component}")
-                    service.append_component(component)
-                else:
-                    logger.debug(
-                        f"[{component_type}] No changes detected. Skipping append for {component_id}"
-                    )
-
-            return return_value
-
-        return wrapper
-
-    return decorator
+    logger.warning(f"[generate_stable_atom_name_from_component_id] Unexpected component_id format {component_id=}")
+    return generate_stable_id(prefix)
 
 
 def export_app_to_pdf(all_components: list[dict], output_path: str):

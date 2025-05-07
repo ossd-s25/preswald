@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 import { comm } from '@/utils/websocket';
 
 // Utilities
-import { createExtractKeyProps } from '../utils/extractKeyProps';
+import { createExtractKeyProps } from '@/utils/extractKeyProps';
 // Widgets
 import AlertWidget from './widgets/AlertWidget';
 import BigNumberWidget from './widgets/BigNumberWidget';
@@ -372,8 +372,7 @@ const MemoizedComponent = memo(
       prevProps.component.error === nextProps.component.error &&
       prevProps.index === nextProps.index
     );
-  }
-);
+  });
 
 const DynamicComponents = ({ components, onComponentUpdate }) => {
   useEffect(() => {
