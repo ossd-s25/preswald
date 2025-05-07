@@ -10,7 +10,6 @@ import re
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import tomllib
 
 # from PIL import Image
 # try:
@@ -130,16 +129,6 @@ def chat(source: str, table: str | None = None, component_id: str | None = None,
     if current_state is None:
         current_state = {"messages": [], "source": source}
 
-    # Get API key from secrets.toml
-    with open("secrets.toml", "rb") as toml:
-        secrets = tomllib.load(toml)
-
-    if secrets and secrets["data"]["openai"]["api_key"]:
-        api_key = secrets["data"]["openai"]["api_key"]
-
-    else:
-        api_key = None
-
     # Get dataframe from source
     df = (
         service.data_manager.get_df(source)
@@ -175,7 +164,6 @@ def chat(source: str, table: str | None = None, component_id: str | None = None,
         "config": {
             "source": source,
             "data": serializable_data,
-            "apiKey": api_key,
         },
     }
 

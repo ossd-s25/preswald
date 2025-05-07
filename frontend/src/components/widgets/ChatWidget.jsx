@@ -15,7 +15,6 @@ const ChatWidget = ({
   id,
   sourceId = null,
   sourceData = null,
-  apiKey = null,
   value = { messages: [] },
   onChange,
   className,
@@ -25,14 +24,9 @@ const ChatWidget = ({
   const messagesEndRef = useRef(null);
   const chatContainerRef = useRef(null);
 
-  // Load API key from secrets.toml if present
-  if (apiKey) {
-    sessionStorage.setItem('openai_api_key', apiKey.trim());
-  }
-
   const [inputValue, setInputValue] = useState('');
   const [showSettings, setShowSettings] = useState(false);
-  // const [apiKey, setApiKey] = useState('');
+  const [apiKey, setApiKey] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const hasApiKey = useMemo(() => !!sessionStorage.getItem('openai_api_key'), []);
