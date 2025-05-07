@@ -1,5 +1,7 @@
 import { Link2Icon } from 'lucide-react';
+import rehypeKatex from 'rehype-katex';
 import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
 import remarkSlug from 'remark-slug';
 
 import React, { useEffect, useState } from 'react';
@@ -12,7 +14,7 @@ import { Card, CardContent } from '@/components/ui/card';
 
 import { cn } from '@/lib/utils';
 
-const MarkdownRendererWidget = ({ markdown, value, error, className }) => {
+const MarkdownRendererWidget = ({ id, markdown, value, error, className }) => {
   const content = markdown || value || '';
   const [targetId, setTargetId] = useState('');
 
@@ -45,10 +47,11 @@ const MarkdownRendererWidget = ({ markdown, value, error, className }) => {
   }
 
   return (
-    <Card className={cn('overflow-hidden', className)}>
+    <Card id={id} className={cn('overflow-hidden', className)}>
       <CardContent className="prose max-w-none prose-pre:p-0 prose-pre:bg-transparent prose-pre:m-0 prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-foreground prose-code:before:content-none prose-code:after:content-none">
         <ReactMarkdown
-          remarkPlugins={[remarkGfm, remarkSlug]}
+          remarkPlugins={[remarkGfm, remarkMath, remarkSlug]}
+          rehypePlugins={[rehypeKatex]}
           components={{
             h1: createHeadingComponent('h1', targetId),
             h2: createHeadingComponent('h2', targetId),

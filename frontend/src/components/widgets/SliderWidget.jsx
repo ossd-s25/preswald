@@ -1,3 +1,5 @@
+import { useDebouncedCallback } from 'use-debounce';
+
 import React from 'react';
 
 import { Label } from '@/components/ui/label';
@@ -16,10 +18,14 @@ const SliderWidget = ({
 }) => {
   const [localValue, setLocalValue] = React.useState(value);
 
+  const debouncedOnChange = useDebouncedCallback((value) => {
+    onChange?.(value);
+  }, 100);
+
   const handleChange = (e) => {
     const newValue = parseFloat(e.target.value);
     setLocalValue(newValue);
-    onChange?.(newValue);
+    debouncedOnChange(newValue);
   };
 
   React.useEffect(() => {
@@ -27,7 +33,7 @@ const SliderWidget = ({
   }, [value]);
 
   return (
-    <div className={cn('grid gap-2 w-full max-w-sm mb-4', className)}>
+    <div id={id} className={cn('grid gap-2 w-full max-w-sm mb-4', className)}>
       <div className="flex items-center justify-between">
         <Label
           htmlFor={id}

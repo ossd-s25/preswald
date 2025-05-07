@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "preswald"
-version = "0.1.52"
+version = "0.1.53"
 description = "A lightweight data workflow SDK"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -38,6 +38,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8.3", "build", "twine", "ruff>=0.1.11", "pre-commit>=3.5.0"]
+playwright = ["playwright>=1.15.0,<2.0.0; platform_system != 'Emscripten'"]
 
 [project.scripts]
 preswald = "preswald.cli:cli"
